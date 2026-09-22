@@ -1,0 +1,6 @@
+{
+  "name": "برنامج الاستشارة — تموين المطعم المدرسي",
+  "description": "برنامج إدارة استشارة تموين مطعم المؤسسة التربوية وإصدار وثائقها القانونية القابلة للطباعة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
