@@ -5,6 +5,9 @@ import {useStore} from '../store';
 export function Home({onEnter}: {onEnter: (m: 'cantine' | 'chauffage') => void}) {
   const {state: cantine} = useStore();
   const {state: heat} = useHeat();
+  const orgLine = [cantine.settings.institution, cantine.settings.wilaya ? `مديرية التربية لولاية ${cantine.settings.wilaya}` : '']
+    .filter(Boolean)
+    .join(' — ');
 
   const Card = ({
     mode,
@@ -46,9 +49,7 @@ export function Home({onEnter}: {onEnter: (m: 'cantine' | 'chauffage') => void})
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-10">
       <div className="text-center mb-10">
         <div className="text-4xl font-extrabold text-teal-800 mb-2">برنامج الاستشارات</div>
-        <p className="text-slate-500">
-          {cantine.settings.institution} — مديرية التربية لولاية {cantine.settings.wilaya}
-        </p>
+        {orgLine && <p className="text-slate-500">{orgLine}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">

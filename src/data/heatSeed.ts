@@ -46,11 +46,11 @@ export function newEntrepreneur(id: string): Entrepreneur {
 export function defaultHeatState(): HeatState {
   return {
     settings: {
-      wilaya: 'باتنة',
-      commune: 'وادي الماء',
-      institution: 'ثانوية الشهداء الإخوة عبد الرحمان سعيد عامر يوسف (ثانوية وادي الماء سابقاً)',
-      institutionShort: 'ثانوية الشهداء الإخوة عبد الرحمان سعيد عامر يوسف',
-      directeur: 'نية باديس',
+      wilaya: '',
+      commune: '',
+      institution: '',
+      institutionShort: '',
+      directeur: '',
       annee: new Date().getFullYear(),
       numeroConsultation: '01/2026',
       projet: 'أشغال التدفئة المركزية ولواحقها',

@@ -3,7 +3,7 @@ import type {ReactNode} from 'react';
 import type {Committee, Entrepreneur, HeatArticle, HeatOffer, HeatSettings, HeatState, Ouvrage} from './types';
 import {defaultHeatState} from './data/heatSeed';
 
-const KEY = 'estichara-heat-v1';
+const KEY = 'estichara-heat-v2';
 
 interface HeatCtx {
   state: HeatState;

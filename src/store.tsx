@@ -4,7 +4,7 @@ import type {AppState, ArticleItem, Bidder, Committee, Lot, Offer, Settings} fro
 import {defaultState} from './data/seed';
 import {defaultArticles} from './data/texts';
 
-const KEY = 'estichara-state-v1';
+const KEY = 'estichara-state-v2';
 
 interface StoreCtx {
   state: AppState;

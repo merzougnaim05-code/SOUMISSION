@@ -96,11 +96,11 @@ const lot4: Lot = {
 export function defaultState(): AppState {
   return {
     settings: {
-      wilaya: 'باتنة',
-      commune: 'وادي الماء',
-      institution: 'ثانوية وادي الماء',
-      directeur: 'نية باديس',
-      ordonnateur: 'فردي منير',
+      wilaya: '',
+      commune: '',
+      institution: '',
+      directeur: '',
+      ordonnateur: '',
       annee: new Date().getFullYear(),
       numeroAnnonce: 1,
       dateAnnonce: '',
@@ -117,22 +117,7 @@ export function defaultState(): AppState {
       dateSessionConseil: '',
     },
     lots: [lot1, lot2, lot3, lot4],
-    bidders: [
-      {
-        id: 'b1',
-        nom: 'مسعود دواق خليفة',
-        formeJuridique: 'شخص طبيعي',
-        rc: '05/00-1114593 98أ',
-        activite: 'تموين - الخبز بجميع أنواعه',
-        nif: '',
-        nis: '',
-        rib: '00300337100597300027',
-        banque: 'BADR',
-        agence: 'مروانة',
-        adresse: 'وادي الماء',
-        gerant: 'مسعود دواق خليفة',
-      },
-    ],
+    bidders: [],
     offers: [],
     committee: {
       president: '',
