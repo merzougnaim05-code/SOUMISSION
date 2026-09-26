@@ -1,0 +1,7 @@
+{
+  "name": "soumission",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
