@@ -9,11 +9,25 @@ import {HeatDQE, HeatPrix} from '../../docs/heat/Prix';
 import {HeatMemo, HeatOrdre} from '../../docs/heat/Memo';
 import {HeatComparaison, HeatResultats} from '../../docs/heat/Eval';
 
-type DocKey = 'annonce' | 'cahier' | 'prix' | 'dqe' | 'memo' | 'ordre' | 'comparaison' | 'resultats';
+type DocKey =
+  | 'annonce'
+  | 'cahier'
+  | 'cahierInst'
+  | 'contrat'
+  | 'cps'
+  | 'prix'
+  | 'dqe'
+  | 'memo'
+  | 'ordre'
+  | 'comparaison'
+  | 'resultats';
 
 const DOCS: {key: DocKey; label: string; desc: string; needsEntrepreneur?: boolean}[] = [
   {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات الملف الثلاثي'},
   {key: 'cahier', label: 'دفتر الشروط الكامل', desc: 'تعليمات العارضين + العقد + التعليمات الخاصة (مواد قابلة للتعديل)'},
+  {key: 'cahierInst', label: 'دفتر الشروط — التعليمات', desc: 'التعليمات الموجهة للعارضين في كتاب مستقل'},
+  {key: 'contrat', label: 'العقد (الشروط الإدارية)', desc: 'كتاب العقد مستقلاً مع توقيع الطرفين'},
+  {key: 'cps', label: 'دفتر التعليمات الخاصة', desc: 'الشروط التقنية الخاصة في كتاب مستقل'},
   {key: 'prix', label: 'جدول الأسعار الوحدوية', desc: 'مع الأسعار بالحروف تلقائياً', needsEntrepreneur: true},
   {key: 'dqe', label: 'التفصيل الكمي والتقديري', desc: 'DQE مع H.T / TVA / T.T.C والتقريب', needsEntrepreneur: true},
   {key: 'memo', label: 'المذكرة التقنية التبريرية', desc: 'نموذج الوسائل المادية والبشرية'},
@@ -36,6 +50,12 @@ export function HeatDocumentsPage() {
         return <Annonce />;
       case 'cahier':
         return <Cahier />;
+      case 'cahierInst':
+        return <Cahier only={['inst']} coverTitle="دفتر الشروط" />;
+      case 'contrat':
+        return <Cahier only={['ccap']} coverTitle="العقد" />;
+      case 'cps':
+        return <Cahier only={['cpc']} coverTitle="دفتر التعليمات الخاصة" />;
       case 'prix':
         return <HeatPrix entrepreneurId={entrepreneurId} />;
       case 'dqe':
@@ -55,8 +75,11 @@ export function HeatDocumentsPage() {
     const s = state.settings;
     const e = state.entrepreneurs.find((x) => x.id === entrepreneurId);
     const names: Record<DocKey, string> = {
-      annonce: `إعلان استشارة التدفئة ${s.numeroConsultation}`,
+      annonce: `إعلان استشارة الأشغال ${s.numeroConsultation}`,
       cahier: 'دفتر شروط أشغال التدفئة المركزية',
+      cahierInst: 'دفتر الشروط — التعليمات الموجهة للعارضين',
+      contrat: 'العقد — الشروط الإدارية',
+      cps: 'دفتر التعليمات الخاصة',
       prix: `جدول الأسعار الوحدوية - ${e?.nom ?? ''}`,
       dqe: `التفصيل الكمي والتقديري - ${e?.nom ?? ''}`,
       memo: 'المذكرة التقنية التبريرية',
@@ -70,7 +93,7 @@ export function HeatDocumentsPage() {
   return (
     <div className="flex gap-4 items-start">
       <div className="no-print w-72 shrink-0 bg-white rounded-xl shadow-sm border border-slate-200 p-3 sticky top-4">
-        <h2 className="font-bold text-slate-800 mb-3 px-1">وثائق استشارة التدفئة للطباعة</h2>
+        <h2 className="font-bold text-slate-800 mb-3 px-1">وثائق استشارة الأشغال للطباعة</h2>
         <div className="space-y-1 max-h-[70vh] overflow-y-auto">
           {DOCS.map((d) => (
             <button
@@ -93,7 +116,7 @@ export function HeatDocumentsPage() {
           <Btn variant="ghost" onClick={() => exportWord(printRef.current, `${docFileName()}.doc`)}>
             ⬇ تحميل Word
           </Btn>
-          <Btn variant="ghost" onClick={() => exportHeatExcel(state, `استشارة التدفئة ${state.settings.annee}.xlsx`)}>
+          <Btn variant="ghost" onClick={() => exportHeatExcel(state, `استشارة الأشغال ${state.settings.annee}.xlsx`)}>
             ⬇ تحميل Excel (كل البيانات)
           </Btn>
           <span className="text-sm text-slate-500">{meta.label}</span>

@@ -8,7 +8,7 @@ const SECTION_NAMES: Record<string, string> = {
   cpc: 'ثالثاً: دفتر التعليمات الخاصة',
 };
 
-/** تعديل مواد دفتر شروط التدفئة (86 مادة مستخرجة من الملف الأصلي) */
+/** تعديل مواد دفتر شروط الأشغال (86 مادة مستخرجة من الملف الأصلي) */
 export function HeatTextsPage() {
   const {state, setArticles} = useHeat();
   const articles = state.articles;
@@ -26,12 +26,19 @@ export function HeatTextsPage() {
     [copy[i], copy[j]] = [copy[j], copy[i]];
     setArticles(copy);
   };
+  const add = (sec: 'inst' | 'ccap' | 'cpc') => {
+    const nextNum = articles.filter((a) => a.section === sec).length + 1;
+    setArticles([
+      ...articles,
+      {id: `ha-custom-${sec}-${Date.now()}`, section: sec, titre: `المادة ${nextNum}: `, corps: ''},
+    ]);
+  };
 
   const bySection = (sec: 'inst' | 'ccap' | 'cpc') => articles.filter((a) => a.section === sec);
 
   return (
     <Section
-      title="تعديل دفتر شروط التدفئة المركزية"
+      title="تعديل دفتر شروط الأشغال"
       actions={
         <Btn
           small
@@ -48,7 +55,13 @@ export function HeatTextsPage() {
       </p>
       {(['inst', 'ccap', 'cpc'] as const).map((sec) => (
         <div key={sec} className="mb-6">
-          <h3 className="font-bold text-teal-800 mb-2 border-b border-teal-100 pb-1">{SECTION_NAMES[sec]}</h3>
+          <div className="flex items-center gap-2 mb-2 border-b border-teal-100 pb-1">
+            <h3 className="font-bold text-teal-800">{SECTION_NAMES[sec]}</h3>
+            <div className="flex-1" />
+            <Btn small variant="ghost" onClick={() => add(sec)}>
+              + إضافة مادة
+            </Btn>
+          </div>
           <div className="space-y-3">
             {bySection(sec).map((a) => (
               <div key={a.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50">

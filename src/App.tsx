@@ -101,7 +101,7 @@ function HeatShell({onHome}: {onHome: () => void}) {
             ⌂ الرئيسية
           </button>
           <div>
-            <h1 className="text-lg font-extrabold">استشارة التدفئة المركزية 🔥</h1>
+            <h1 className="text-lg font-extrabold">استشارة الأشغال 🔥</h1>
             <p className="text-xs text-orange-200">
               استشارة رقم {s.numeroConsultation} — {s.projet} — {s.institutionShort}
             </p>

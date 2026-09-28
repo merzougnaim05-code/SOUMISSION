@@ -80,7 +80,7 @@ export interface AppState {
   articles: ArticleItem[];
 }
 
-/* ================== استشارة التدفئة المركزية ================== */
+/* ================== استشارة الأشغال المركزية ================== */
 
 /** بند أشغال (Ouvrage) */
 export interface Ouvrage {

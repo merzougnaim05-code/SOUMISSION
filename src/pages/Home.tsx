@@ -69,7 +69,7 @@ export function Home({onEnter}: {onEnter: (m: 'cantine' | 'chauffage') => void})
         <Card
           mode="chauffage"
           icon="🔥"
-          title="استشارة التدفئة المركزية"
+          title="استشارة الأشغال"
           subtitle={`استشارة رقم ${heat.settings.numeroConsultation} — ${heat.settings.projet}`}
           color="bg-orange-50"
           infos={[

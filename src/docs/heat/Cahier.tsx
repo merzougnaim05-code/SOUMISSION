@@ -1,6 +1,8 @@
 import {useHeat} from '../../heatStore';
 import {HeatHeader, HPage, HSign} from './primitives';
 
+type CahierSection = 'inst' | 'ccap' | 'cpc';
+
 /** دفتر الشروط — المواد القابلة للتعديل (تعليمات للعارضين + عقد + دفتر التعليمات الخاصة) */
 const SECTION_TITLES: Record<string, string> = {
   inst: 'أولاً: التعليمات الموجهة للعارضين',
@@ -8,11 +10,12 @@ const SECTION_TITLES: Record<string, string> = {
   cpc: 'ثالثاً: دفتر التعليمات الخاصة',
 };
 
-export function HeatCahier() {
+export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTitle?: string}) {
   const {state} = useHeat();
   const s = state.settings;
   const arts = state.articles ?? [];
-  const sections: ('inst' | 'ccap' | 'cpc')[] = ['inst', 'ccap', 'cpc'];
+  const sections: CahierSection[] = only ?? ['inst', 'ccap', 'cpc'];
+  const standalone = (sec: CahierSection) => !!only && only.length === 1 && only[0] === sec;
 
   return (
     <>
@@ -20,7 +23,7 @@ export function HeatCahier() {
       <HPage>
         <HeatHeader />
         <div className="text-center" style={{marginTop: '60pt', fontWeight: 700, fontSize: '26pt'}}>
-          دفتر الشروط
+          {coverTitle ?? 'دفتر الشروط'}
         </div>
         <div className="text-center" style={{marginTop: '14pt', fontWeight: 700, fontSize: '16pt'}}>
           أشغال التدفئة المركزية ولواحقها
@@ -74,6 +77,18 @@ export function HeatCahier() {
                   حرر بـ .................. في .....................
                 </div>
                 <HSign right="المتعهد" />
+              </>
+            )}
+            {standalone(sec) && (sec === 'ccap' || sec === 'cpc') && (
+              <>
+                <div className="text-sm mt-10">
+                  حرر بـ .................. في .....................
+                </div>
+                {sec === 'ccap' ? (
+                  <HSign right="صاحب المشروع" left="المقاولة المتعاملة" />
+                ) : (
+                  <HSign right="صاحب المشروع" />
+                )}
               </>
             )}
           </HPage>

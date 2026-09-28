@@ -1,4 +1,4 @@
-/** تصدير بيانات استشارة التدفئة إلى Excel */
+/** تصدير بيانات استشارة الأشغال إلى Excel */
 import * as XLSX from 'xlsx';
 import type {HeatState} from './types';
 import {rankHeat} from './heatStore';

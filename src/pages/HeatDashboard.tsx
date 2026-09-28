@@ -12,7 +12,7 @@ export function HeatDashboard() {
         actions={
           <button
             className="text-xs text-rose-600 underline"
-            onClick={() => confirm('استعادة البيانات الافتراضية لاستشارة التدفئة وحذف كل التعديلات؟') && resetAll()}
+            onClick={() => confirm('استعادة البيانات الافتراضية لاستشارة الأشغال وحذف كل التعديلات؟') && resetAll()}
           >
             استعادة البيانات الافتراضية
           </button>
