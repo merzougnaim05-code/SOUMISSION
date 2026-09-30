@@ -8,3 +8,4 @@ coverage/
 !.env.example
 (1)*
 .netlify/
+netlify-direct-deploy.cjs
