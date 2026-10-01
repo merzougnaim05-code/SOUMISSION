@@ -145,11 +145,15 @@ function Router() {
   return <Home onEnter={setMode} />;
 }
 
+import {PrintProvider} from './printSettings';
+
 export default function App() {
   return (
     <StoreProvider>
       <HeatProvider>
-        <Router />
+        <PrintProvider>
+          <Router />
+        </PrintProvider>
       </HeatProvider>
     </StoreProvider>
   );

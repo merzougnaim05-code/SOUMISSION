@@ -1,6 +1,7 @@
 import {useRef, useState} from 'react';
 import {useHeat} from '../../heatStore';
 import {Btn} from '../../ui';
+import {usePrint, PrintSettingsPanel} from '../../printSettings';
 import {exportWord} from '../../exportWord';
 import {exportHeatExcel} from '../../exportHeatExcel';
 import {HeatAnnonce as Annonce} from '../../docs/heat/Annonce';
@@ -38,6 +39,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsEntrepreneur?: boole
 
 export function HeatDocumentsPage() {
   const {state} = useHeat();
+  const {vars} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [entrepreneurId, setEntrepreneurId] = useState(state.entrepreneurs[0]?.id ?? '');
   const printRef = useRef<HTMLDivElement>(null);
@@ -136,7 +138,8 @@ export function HeatDocumentsPage() {
             </select>
           )}
         </div>
-        <div ref={printRef} className="print-area doc-scroll rounded-xl">
+        <PrintSettingsPanel />
+        <div ref={printRef} className="print-area doc-scroll rounded-xl" style={vars}>
           {renderDoc()}
         </div>
       </div>

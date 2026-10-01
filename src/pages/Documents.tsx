@@ -1,6 +1,7 @@
 import {useRef, useState} from 'react';
 import {rankLot, useStore} from '../store';
 import {Btn} from '../ui';
+import {usePrint, PrintSettingsPanel} from '../printSettings';
 import {exportWord} from '../exportWord';
 import {exportExcel} from '../exportExcel';
 import {AnnonceDoc} from '../docs/Annonce';
@@ -44,6 +45,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
 
 export function DocumentsPage() {
   const {state} = useStore();
+  const {vars} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
   const [bidderId, setBidderId] = useState(state.bidders[0]?.id ?? '');
@@ -137,7 +139,8 @@ export function DocumentsPage() {
             </select>
           )}
         </div>
-        <div ref={printRef} className="print-area doc-scroll rounded-xl">
+        <PrintSettingsPanel />
+        <div ref={printRef} className="print-area doc-scroll rounded-xl" style={vars}>
           {renderDoc()}
         </div>
       </div>
