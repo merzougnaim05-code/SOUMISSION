@@ -118,6 +118,9 @@ export function DocumentsPage() {
             ⬇ تحميل Excel (كل البيانات)
           </Btn>
           <span className="text-sm text-slate-500">{meta.label}</span>
+          <span className="text-xs text-slate-400">
+            لتعديل نصوص دفتر الشروط: تبويب «دفاتر الشروط» أعلاه
+          </span>
           <div className="flex-1" />
           {meta.needsLot && (
             <select className="app-input max-w-[260px]" value={lotId} onChange={(e) => setLotId(e.target.value)}>

@@ -122,6 +122,9 @@ export function HeatDocumentsPage() {
             ⬇ تحميل Excel (كل البيانات)
           </Btn>
           <span className="text-sm text-slate-500">{meta.label}</span>
+          <span className="text-xs text-slate-400">
+            لتعديل نصوص العقد ودفتر الشروط: تبويب «دفتر الشروط» أعلاه
+          </span>
           <div className="flex-1" />
           {meta.needsEntrepreneur && (
             <select

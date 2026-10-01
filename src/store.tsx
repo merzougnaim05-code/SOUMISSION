@@ -25,7 +25,10 @@ function load(): AppState {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<AppState>;
       if (parsed && parsed.lots && parsed.settings) {
-        return {...defaultState(), ...parsed, articles: parsed.articles ?? defaultArticles()};
+        // نفس الحماية لجهة المطعم: قائمة مواد فارغة = استعادة الافتراضي
+        const articles =
+          parsed.articles && parsed.articles.length > 0 ? parsed.articles : defaultArticles();
+        return {...defaultState(), ...parsed, articles};
       }
     }
   } catch {

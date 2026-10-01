@@ -2,6 +2,7 @@ import {createContext, useContext, useEffect, useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import type {Committee, Entrepreneur, HeatArticle, HeatOffer, HeatSettings, HeatState, Ouvrage} from './types';
 import {defaultHeatState} from './data/heatSeed';
+import {defaultHeatArticles} from './data/heatArticles';
 
 const KEY = 'estichara-heat-v2';
 
@@ -23,7 +24,13 @@ function load(): HeatState {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<HeatState>;
-      if (parsed && parsed.settings && parsed.ouvrages) return {...defaultHeatState(), ...parsed};
+      if (parsed && parsed.settings && parsed.ouvrages) {
+        // نسخة محفوظة قديمة قد لا تحوي المواد أو تحوي قائمة فارغة —
+        // نسترجع النصوص الافتراضية بدل ترك العقد ودفتر الشروط فارغين
+        const articles =
+          parsed.articles && parsed.articles.length > 0 ? parsed.articles : defaultHeatArticles();
+        return {...defaultHeatState(), ...parsed, articles};
+      }
     }
   } catch {
     /* تجاهل */

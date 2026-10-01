@@ -11,7 +11,7 @@ const SECTION_NAMES: Record<string, string> = {
 /** تعديل مواد دفتر شروط الأشغال (86 مادة مستخرجة من الملف الأصلي) */
 export function HeatTextsPage() {
   const {state, setArticles} = useHeat();
-  const articles = state.articles;
+  const articles = state.articles ?? [];
 
   const update = (id: string, patch: Partial<(typeof articles)[number]>) =>
     setArticles(articles.map((a) => (a.id === id ? {...a, ...patch} : a)));
