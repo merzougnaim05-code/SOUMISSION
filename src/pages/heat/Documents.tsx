@@ -2,6 +2,7 @@ import {useRef, useState} from 'react';
 import {useHeat} from '../../heatStore';
 import {Btn} from '../../ui';
 import {usePrint, PrintSettingsPanel} from '../../printSettings';
+import {gotoHeatTab, type HeatTab} from '../../shellNav';
 import {exportWord} from '../../exportWord';
 import {exportHeatExcel} from '../../exportHeatExcel';
 import {HeatAnnonce as Annonce} from '../../docs/heat/Annonce';
@@ -23,18 +24,26 @@ type DocKey =
   | 'comparaison'
   | 'resultats';
 
-const DOCS: {key: DocKey; label: string; desc: string; needsEntrepreneur?: boolean}[] = [
-  {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات الملف الثلاثي'},
-  {key: 'cahier', label: 'دفتر الشروط الكامل', desc: 'تعليمات العارضين + العقد + التعليمات الخاصة (مواد قابلة للتعديل)'},
-  {key: 'cahierInst', label: 'دفتر الشروط — التعليمات', desc: 'التعليمات الموجهة للعارضين في كتاب مستقل'},
-  {key: 'contrat', label: 'العقد (الشروط الإدارية)', desc: 'كتاب العقد مستقلاً مع توقيع الطرفين'},
-  {key: 'cps', label: 'دفتر التعليمات الخاصة', desc: 'الشروط التقنية الخاصة في كتاب مستقل'},
-  {key: 'prix', label: 'جدول الأسعار الوحدوية', desc: 'مع الأسعار بالحروف تلقائياً', needsEntrepreneur: true},
-  {key: 'dqe', label: 'التفصيل الكمي والتقديري', desc: 'DQE مع H.T / TVA / T.T.C والتقريب', needsEntrepreneur: true},
-  {key: 'memo', label: 'المذكرة التقنية التبريرية', desc: 'نموذج الوسائل المادية والبشرية'},
-  {key: 'ordre', label: 'أمر بداية الأشغال + التبليغ', desc: 'للمقاولة الفائزة'},
-  {key: 'comparaison', label: 'جدول مقارنة وتقييم العروض', desc: 'تقني (40 نقطة) + مالي + الترتيب'},
-  {key: 'resultats', label: 'إعلان النتائج', desc: 'المقاولة الفائزة بمبلغها تفقيطاً'},
+const DOCS: {
+  key: DocKey;
+  label: string;
+  desc: string;
+  needsEntrepreneur?: boolean;
+  editTab: HeatTab;
+  editAnchor?: string;
+  editLabel: string;
+}[] = [
+  {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات الملف الثلاثي', editTab: 'dash', editLabel: 'تعديل المعطيات'},
+  {key: 'cahier', label: 'دفتر الشروط الكامل', desc: 'تعليمات العارضين + العقد + التعليمات الخاصة (مواد قابلة للتعديل)', editTab: 'texts', editLabel: 'تعديل النصوص'},
+  {key: 'cahierInst', label: 'دفتر الشروط — التعليمات', desc: 'التعليمات الموجهة للعارضين في كتاب مستقل', editTab: 'texts', editAnchor: 'heat-sec-inst', editLabel: 'تعديل التعليمات'},
+  {key: 'contrat', label: 'العقد (الشروط الإدارية)', desc: 'كتاب العقد مستقلاً مع توقيع الطرفين', editTab: 'texts', editAnchor: 'heat-sec-ccap', editLabel: 'تعديل العقد'},
+  {key: 'cps', label: 'دفتر التعليمات الخاصة', desc: 'الشروط التقنية الخاصة في كتاب مستقل', editTab: 'texts', editAnchor: 'heat-sec-cpc', editLabel: 'تعديل الدفتر'},
+  {key: 'prix', label: 'جدول الأسعار الوحدوية', desc: 'مع الأسعار بالحروف تلقائياً', needsEntrepreneur: true, editTab: 'ouvrages', editLabel: 'تعديل البنود'},
+  {key: 'dqe', label: 'التفصيل الكمي والتقديري', desc: 'DQE مع H.T / TVA / T.T.C والتقريب', needsEntrepreneur: true, editTab: 'ouvrages', editLabel: 'تعديل البنود'},
+  {key: 'memo', label: 'المذكرة التقنية التبريرية', desc: 'نموذج الوسائل المادية والبشرية', editTab: 'entrepreneurs', editLabel: 'تعديل المقاولات'},
+  {key: 'ordre', label: 'أمر بداية الأشغال + التبليغ', desc: 'للمقاولة الفائزة', editTab: 'entrepreneurs', editLabel: 'تعديل المقاولات'},
+  {key: 'comparaison', label: 'جدول مقارنة وتقييم العروض', desc: 'تقني (40 نقطة) + مالي + الترتيب', editTab: 'offers', editLabel: 'تعديل العروض'},
+  {key: 'resultats', label: 'إعلان النتائج', desc: 'المقاولة الفائزة بمبلغها تفقيطاً', editTab: 'offers', editLabel: 'تعديل العروض'},
 ];
 
 export function HeatDocumentsPage() {
@@ -98,16 +107,25 @@ export function HeatDocumentsPage() {
         <h2 className="font-bold text-slate-800 mb-3 px-1">وثائق استشارة الأشغال للطباعة</h2>
         <div className="space-y-1 max-h-[70vh] overflow-y-auto">
           {DOCS.map((d) => (
-            <button
+            <div
               key={d.key}
-              onClick={() => setDocKey(d.key)}
-              className={`w-full text-right rounded-lg px-3 py-2 transition ${
+              className={`w-full rounded-lg px-3 py-2 transition ${
                 docKey === d.key ? 'bg-teal-700 text-white' : 'hover:bg-slate-50 text-slate-700'
               }`}
             >
-              <div className="text-sm font-semibold">{d.label}</div>
-              <div className={`text-[11px] ${docKey === d.key ? 'text-teal-100' : 'text-slate-400'}`}>{d.desc}</div>
-            </button>
+              <button onClick={() => setDocKey(d.key)} className="w-full text-right">
+                <div className="text-sm font-semibold">{d.label}</div>
+                <div className={`text-[11px] ${docKey === d.key ? 'text-teal-100' : 'text-slate-400'}`}>{d.desc}</div>
+              </button>
+              <button
+                onClick={() => gotoHeatTab(d.editTab, d.editAnchor)}
+                className={`mt-1 text-xs font-semibold underline underline-offset-2 ${
+                  docKey === d.key ? 'text-teal-100 hover:text-white' : 'text-teal-700 hover:text-teal-900'
+                }`}
+              >
+                ✏ {d.editLabel}
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -122,6 +140,9 @@ export function HeatDocumentsPage() {
             ⬇ تحميل Excel (كل البيانات)
           </Btn>
           <span className="text-sm text-slate-500">{meta.label}</span>
+          <Btn small variant="ghost" onClick={() => gotoHeatTab(meta.editTab, meta.editAnchor)}>
+            ✏ {meta.editLabel}
+          </Btn>
           <span className="text-xs text-slate-400">
             لتعديل نصوص العقد ودفتر الشروط: تبويب «دفتر الشروط» أعلاه
           </span>

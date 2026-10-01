@@ -54,7 +54,7 @@ export function HeatTextsPage() {
         المطبوعة وتصدير Word.
       </p>
       {(['inst', 'ccap', 'cpc'] as const).map((sec) => (
-        <div key={sec} className="mb-6">
+        <div key={sec} id={`heat-sec-${sec}`} className="mb-6 scroll-mt-4">
           <div className="flex items-center gap-2 mb-2 border-b border-teal-100 pb-1">
             <h3 className="font-bold text-teal-800">{SECTION_NAMES[sec]}</h3>
             <div className="flex-1" />

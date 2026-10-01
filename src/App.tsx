@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {StoreProvider, useStore} from './store';
 import {HeatProvider, useHeat} from './heatStore';
 import {Home} from './pages/Home';
@@ -92,6 +92,20 @@ function HeatShell({onHome}: {onHome: () => void}) {
   const [tab, setTab] = useState<Tab>('dash');
   const {state} = useHeat();
   const s = state.settings;
+
+  // استقبال طلبات التنقل من أزرار التعديل الخاصة بكل وثيقة
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const d = (e as CustomEvent).detail as {tab: Tab; anchor?: string};
+      setTab(d.tab);
+      setTimeout(() => {
+        if (d.anchor) document.getElementById(d.anchor)?.scrollIntoView({behavior: 'smooth', block: 'start'});
+        else window.scrollTo({top: 0});
+      }, 80);
+    };
+    window.addEventListener('heat-goto', handler);
+    return () => window.removeEventListener('heat-goto', handler);
+  }, []);
 
   return (
     <div className="min-h-screen">
