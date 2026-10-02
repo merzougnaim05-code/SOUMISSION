@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {StoreProvider, useStore} from './store';
 import {HeatProvider, useHeat} from './heatStore';
+import {Flag} from './components/Flag';
 import {Home} from './pages/Home';
 import {DashboardPage} from './pages/Dashboard';
 import {LotsPage} from './pages/Lots';
@@ -44,35 +45,49 @@ function CantineShell({onHome}: {onHome: () => void}) {
   const s = state.settings;
 
   return (
-    <div className="min-h-screen">
-      <header className="no-print bg-teal-800 text-white shadow">
-        <div className="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
-          <button onClick={onHome} className="text-teal-200 hover:text-white text-sm" title="العودة للرئيسية">
-            ⌂ الرئيسية
-          </button>
-          <div>
-            <h1 className="text-lg font-extrabold">استشارة تموين المطعم 🍽</h1>
-            <p className="text-xs text-teal-200">
-              {s.institution} — السنة المالية {s.annee}
-            </p>
+    <div className="min-h-screen bg-slate-200/70 flex flex-col">
+      <header className="no-print sticky top-0 z-40 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white border-b-4 border-amber-500 shadow-xl backdrop-blur-md">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-2.5 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Flag />
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-tight whitespace-nowrap">
+                  استشارة تموين المطعم 🍽
+                </span>
+                <span className="bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                  {state.lots.length} حصص
+                </span>
+              </div>
+              <div className="text-[11px] sm:text-xs text-emerald-200/80 truncate max-w-[280px] sm:max-w-none">
+                {s.institution} — السنة المالية {s.annee}
+              </div>
+            </div>
           </div>
           <div className="flex-1" />
-          <nav className="flex flex-wrap gap-1">
+          <nav className="flex flex-wrap gap-1.5">
             {CANTINE_TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-                  tab === t.key ? 'bg-white text-teal-800' : 'text-teal-100 hover:bg-teal-700'
+                className={`px-3 py-1.5 rounded-xl text-sm font-bold transition ${
+                  tab === t.key ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-emerald-100 hover:bg-emerald-800/80'
                 }`}
               >
                 {t.label}
               </button>
             ))}
           </nav>
+          <button
+            onClick={onHome}
+            className="flex items-center gap-1 bg-white/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
+            title="العودة إلى بوابة البرنامج"
+          >
+            ⌂ البوابة
+          </button>
         </div>
       </header>
-      <main className="max-w-[1400px] mx-auto px-4 py-5">
+      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 py-5">
         {tab === 'dash' && <DashboardPage />}
         {tab === 'lots' && <LotsPage />}
         {tab === 'bidders' && <BiddersPage />}
@@ -81,7 +96,7 @@ function CantineShell({onHome}: {onHome: () => void}) {
         {tab === 'texts' && <TextsPage />}
         {tab === 'docs' && <DocumentsPage />}
       </main>
-      <footer className="no-print max-w-[1400px] mx-auto px-4 pb-6 text-xs text-slate-400">
+      <footer className="no-print bg-slate-900 text-slate-400 text-xs py-4 px-4 text-center border-t border-slate-800">
         يتم حفظ البيانات تلقائياً في هذا المتصفح.
       </footer>
     </div>
@@ -108,35 +123,49 @@ function HeatShell({onHome}: {onHome: () => void}) {
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <header className="no-print bg-orange-800 text-white shadow">
-        <div className="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
-          <button onClick={onHome} className="text-orange-200 hover:text-white text-sm" title="العودة للرئيسية">
-            ⌂ الرئيسية
-          </button>
-          <div>
-            <h1 className="text-lg font-extrabold">استشارة الأشغال 🔥</h1>
-            <p className="text-xs text-orange-200">
-              استشارة رقم {s.numeroConsultation} — {s.projet} — {s.institutionShort}
-            </p>
+    <div className="min-h-screen bg-slate-200/70 flex flex-col">
+      <header className="no-print sticky top-0 z-40 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white border-b-4 border-amber-500 shadow-xl backdrop-blur-md">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-2.5 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Flag />
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-tight whitespace-nowrap">
+                  استشارة الأشغال 🔥
+                </span>
+                <span className="bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                  {state.ouvrages.length} بنود
+                </span>
+              </div>
+              <div className="text-[11px] sm:text-xs text-emerald-200/80 truncate max-w-[280px] sm:max-w-none">
+                استشارة رقم {s.numeroConsultation} — {s.projet} — {s.institutionShort}
+              </div>
+            </div>
           </div>
           <div className="flex-1" />
-          <nav className="flex flex-wrap gap-1">
+          <nav className="flex flex-wrap gap-1.5">
             {HEAT_TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-                  tab === t.key ? 'bg-white text-orange-800' : 'text-orange-100 hover:bg-orange-700'
+                className={`px-3 py-1.5 rounded-xl text-sm font-bold transition ${
+                  tab === t.key ? 'bg-amber-500 text-slate-950 font-black shadow-md' : 'text-emerald-100 hover:bg-emerald-800/80'
                 }`}
               >
                 {t.label}
               </button>
             ))}
           </nav>
+          <button
+            onClick={onHome}
+            className="flex items-center gap-1 bg-white/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
+            title="العودة إلى بوابة البرنامج"
+          >
+            ⌂ البوابة
+          </button>
         </div>
       </header>
-      <main className="max-w-[1400px] mx-auto px-4 py-5">
+      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 py-5">
         {tab === 'dash' && <HeatDashboard />}
         {tab === 'ouvrages' && <HeatOuvragesPage />}
         {tab === 'entrepreneurs' && <HeatEntrepreneursPage />}
@@ -145,7 +174,7 @@ function HeatShell({onHome}: {onHome: () => void}) {
         {tab === 'texts' && <HeatTextsPage />}
         {tab === 'docs' && <HeatDocumentsPage />}
       </main>
-      <footer className="no-print max-w-[1400px] mx-auto px-4 pb-6 text-xs text-slate-400">
+      <footer className="no-print bg-slate-900 text-slate-400 text-xs py-4 px-4 text-center border-t border-slate-800">
         يتم حفظ البيانات تلقائياً في هذا المتصفح.
       </footer>
     </div>

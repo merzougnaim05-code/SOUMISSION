@@ -6,8 +6,9 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     // Netlify builds (git-linked) run with CONTEXT set and serve at the domain root,
-    // while GitHub Pages serves from /SOUMISSION/ — keep both deploys working.
-    base: process.env.CONTEXT ? '/' : '/SOUMISSION/',
+    // Cloudflare Pages builds run with CF_PAGES set, while GitHub Pages serves from
+    // /SOUMISSION/ — keep all deploys working.
+    base: process.env.CONTEXT || process.env.CF_PAGES ? '/' : '/SOUMISSION/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --brand: #0f766e;
+  --brand: #059669;
   --doc-font: "Amiri", "Traditional Arabic", "Times New Roman", serif;
   --doc-font-size: 13.5pt;
   --doc-line: 1.65;
@@ -13,8 +13,8 @@
 
 html,
 body {
-  font-family: "Cairo", "Segoe UI", Tahoma, sans-serif;
-  background: #f1f5f9;
+  font-family: "Amiri", "Traditional Arabic", "Tahoma", system-ui, sans-serif;
+  background: #eef1f2;
 }
 
 /* ============ واجهة البرنامج ============ */
@@ -29,7 +29,7 @@ body {
 }
 .app-input:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.18);
 }
 .app-label {
   display: block;
