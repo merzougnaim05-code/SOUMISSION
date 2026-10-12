@@ -32,12 +32,16 @@ export function TextsPage() {
     if (confirm('حذف هذه المادة نهائياً من دفتر الشروط؟')) setArticles(articles.filter((a) => a.id !== id));
   };
 
-  const add = () => {
+  const add = (sec: string = 'و') => {
     const id = `art${Date.now()}`;
     setArticles([
       ...articles,
-      {id, section: 'و', titre: 'المادة جديدة: ......................', corps: 'نص المادة...'},
+      {id, section: sec as (typeof articles)[number]['section'], titre: 'المادة جديدة: ......................', corps: 'نص المادة...'},
     ]);
+    // التمرير التلقائي نحو المادة الجديدة حتى يراها المستخدم فوراً
+    setTimeout(() => {
+      document.getElementById(`article-${id}`)?.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }, 50);
   };
 
   const bySection = articles.reduce<Record<string, typeof articles>>((acc, a) => {
@@ -50,7 +54,7 @@ export function TextsPage() {
       title="تعديل دفاتر الشروط (التعليمات العامة — العرض التقني)"
       actions={
         <div className="flex gap-2">
-          <Btn small variant="ghost" onClick={add}>
+          <Btn small variant="ghost" onClick={() => add('و')}>
             + مادة جديدة
           </Btn>
           <Btn
@@ -70,12 +74,17 @@ export function TextsPage() {
 
       {Object.entries(bySection).map(([sec, arts]) => (
         <div key={sec} className="mb-6">
-          <h3 className="font-bold text-teal-800 mb-2 border-b border-teal-100 pb-1">
-            {SECTION_NAMES[sec] ?? sec}
-          </h3>
+          <div className="flex items-center gap-2 mb-2 border-b border-teal-100 pb-1">
+            <h3 className="font-bold text-teal-800 flex-1">
+              {SECTION_NAMES[sec] ?? sec}
+            </h3>
+            <Btn small variant="ghost" onClick={() => add(sec)}>
+              + إضافة مادة
+            </Btn>
+          </div>
           <div className="space-y-4">
             {arts.map((a) => (
-              <div key={a.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50">
+              <div key={a.id} id={`article-${a.id}`} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 scroll-mt-4">
                 <div className="flex items-center gap-2 mb-2">
                   <input
                     className="app-input font-bold"
@@ -97,7 +106,7 @@ export function TextsPage() {
                 </div>
                 <textarea
                   className="app-input leading-7"
-                  rows={Math.min(14, Math.max(3, a.corps.split('\n').length + 1))}
+                  rows={Math.min(14, Math.max(3, (a.corps ?? '').split('\n').length + 1))}
                   value={a.corps}
                   onChange={(e) => update(a.id, {corps: e.target.value})}
                   style={{textAlign: 'justify'}}

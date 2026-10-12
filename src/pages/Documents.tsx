@@ -45,7 +45,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
 
 export function DocumentsPage() {
   const {state} = useStore();
-  const {vars} = usePrint();
+  const {vars, settings: printSettings} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
   const [bidderId, setBidderId] = useState(state.bidders[0]?.id ?? '');
@@ -143,7 +143,11 @@ export function DocumentsPage() {
           )}
         </div>
         <PrintSettingsPanel />
-        <div ref={printRef} className="print-area doc-scroll rounded-xl" style={vars}>
+        <div
+          ref={printRef}
+          className={`print-area doc-scroll rounded-xl ${printSettings.safePrint ? 'safe-print' : ''} ${printSettings.avoidBreak ? 'avoid-break' : ''}`}
+          style={vars}
+        >
           {renderDoc()}
         </div>
       </div>

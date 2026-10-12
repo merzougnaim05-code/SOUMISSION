@@ -18,18 +18,22 @@ export function LotsPage() {
           actions={
             <Btn
               small
-              onClick={() =>
+              onClick={() => {
+                const id = `m${Date.now()}`;
                 updateLot(lot.id, (l) =>
                   l.materiaux.push({
-                    id: `m${Date.now()}`,
+                    id,
                     designation: '',
                     unite: '1كغ',
                     qteMin: 0,
                     qteMax: 0,
                     prixRef: 0,
                   }),
-                )
-              }
+                );
+                setTimeout(() => {
+                  document.getElementById(`mat-${id}`)?.scrollIntoView({behavior: 'smooth', block: 'center'});
+                }, 50);
+              }}
             >
               + إضافة مادة
             </Btn>
@@ -50,7 +54,7 @@ export function LotsPage() {
               </thead>
               <tbody>
                 {lot.materiaux.map((mm, i) => (
-                  <tr key={mm.id} className="border-t border-slate-100">
+                  <tr key={mm.id} id={`mat-${mm.id}`} className="border-t border-slate-100 scroll-mt-4">
                     <td className="p-1 text-center text-slate-500">{i + 1}</td>
                     <td className="p-1">
                       <input

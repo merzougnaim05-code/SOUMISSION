@@ -10,6 +10,11 @@ export interface PrintSettings {
   padHmm: number;
   tableFontPt: number;
   titlePt: number;
+  /** mise en forme: محاذاة النص، التباعد بين الفقرات، وضع الطباعة الآمنة */
+  align: 'justify' | 'right' | 'center' | 'left';
+  paraGapPt: number;
+  safePrint: boolean;
+  avoidBreak: boolean;
 }
 
 const KEY = 'print-settings-v1';
@@ -29,6 +34,10 @@ const DEFAULTS: PrintSettings = {
   padHmm: 15,
   tableFontPt: 11.5,
   titlePt: 17,
+  align: 'justify',
+  paraGapPt: 4,
+  safePrint: true,
+  avoidBreak: true,
 };
 
 interface Ctx {
@@ -71,6 +80,8 @@ export function PrintProvider({children}: {children: ReactNode}) {
       '--doc-pad-h': `${settings.padHmm}mm`,
       '--doc-table-font': `${settings.tableFontPt}pt`,
       '--doc-title-size': `${settings.titlePt}pt`,
+      '--doc-align': settings.align,
+      '--doc-para-gap': `${settings.paraGapPt}pt`,
     } as CSSProperties;
     return {
       settings,
@@ -98,13 +109,68 @@ function Row({label, children}: {label: string; children: ReactNode}) {
   );
 }
 
+/** فحص جاهزية الطباعة: يكشف أسباب انفصال الحروف والنقاط الناقصة وتقطيع آخر الورقة */
+export function testPrintReadiness() {
+  const pages = Array.from(document.querySelectorAll('.print-area .doc-page'));
+  if (pages.length === 0) {
+    alert('لا توجد وثيقة معروضة للفحص. اختر وثيقة أولاً ثم أعد الفحص.');
+    return;
+  }
+  const issues: string[] = [];
+  let longWords = 0;
+  let emptyParas = 0;
+  let dotlines = 0;
+
+  pages.forEach((page) => {
+    // كلمات طويلة بلا مسافات تكسر التشكيل وتتجاوز الهامش
+    const text = (page as HTMLElement).innerText ?? '';
+    const words = text.split(/\s+/);
+    words.forEach((w) => {
+      if (w.length > 45) longWords++;
+    });
+    // فقرات فارغة = نقاط/أسطر ناقصة
+    page.querySelectorAll('p, li').forEach((p) => {
+      if (!((p as HTMLElement).innerText ?? '').trim()) emptyParas++;
+    });
+    dotlines += page.querySelectorAll('.doc-dotline, .doc-fill').length;
+    // عناصر أطول من الصفحة ستُقطع حتماً آخر الورقة
+    page.querySelectorAll('table, .doc-art').forEach((el) => {
+      const h = (el as HTMLElement).offsetHeight;
+      // 1122px ≈ ارتفاع A4 بالبكسل (296mm)
+      if (h > 1050) {
+        issues.push('عنصر طويل (جدول/مادة) يتجاوز طول الصفحة وسيُقطع — فعّل «منع تقطيع الجداول والمواد» أو قصّر النص.');
+      }
+    });
+  });
+
+  if (longWords > 0)
+    issues.push(`وجدت ${longWords} كلمة/رابط طويل بلا مسافات — قد يسبب انفصال الحروف أو خروجه عن الهامش.`);
+  if (emptyParas > 3)
+    issues.push(`وجدت ${emptyParas} فقرة فارغة — قد تظهر كنقاط/أسطر ناقصة آخر الورقة. راجع المواد ذات النص الفارغ.`);
+  if (dotlines === 0) issues.push('لا توجد سطور توقيع منقطة في هذه الوثيقة — تحقق أنك في الوثيقة الصحيحة.');
+
+  // فحص الخط: Amiri غير محمل = حروف مشوهة عند الطباعة
+  const amiriOk = Array.from(document.fonts ?? []).some((f) => /amiri/i.test(f.family));
+  if (!amiriOk && document.fonts) issues.push('خط Amiri غير محمّل بعد — انتظر ثواني وأعد الطباعة لتفادي تشوه الحروف.');
+
+  if (issues.length === 0) {
+    alert(
+      `✅ فحص الطباعة سليم: ${pages.length} صفحة، ${dotlines} سطر توقيع.\n` +
+        'الحروف ستبقى متصلة والنقاط مكتملة حتى نهاية الورقة.',
+    );
+  } else {
+    const unique = [...new Set(issues)].slice(0, 6);
+    alert(`⚠ فحص الطباعة وجد ${unique.length} ملاحظة:\n\n• ` + unique.join('\n• '));
+  }
+}
+
 /** لوحة ضبط أبعاد وخط الوثائق — تُحفظ تلقائياً في المتصفح */
 export function PrintSettingsPanel() {
   const {settings: s, set, reset} = usePrint();
   return (
     <details className="no-print w-full bg-slate-50 border border-slate-200 rounded-lg p-3">
       <summary className="cursor-pointer text-sm font-bold text-slate-700">
-        ⚙ ضبط أبعاد الوثيقة والكتابة (ينعكس على المعاينة والطباعة)
+        ⚙ ضبط أبعاد الوثيقة والكتابة / Mise en forme (ينعكس على المعاينة والطباعة)
       </summary>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
         <Row label="الخط">
@@ -115,6 +181,29 @@ export function PrintSettingsPanel() {
               </option>
             ))}
           </select>
+        </Row>
+        <Row label="محاذاة النص (Mise en forme)">
+          <select
+            className="app-input"
+            value={s.align}
+            onChange={(e) => set({align: e.target.value as PrintSettings['align']})}
+          >
+            <option value="justify">مضبوط (Justifié — رسمي)</option>
+            <option value="right">يمين</option>
+            <option value="center">وسط</option>
+            <option value="left">يسار</option>
+          </select>
+        </Row>
+        <Row label={`تباعد الفقرات: ${s.paraGapPt}pt`}>
+          <input
+            type="range"
+            min={0}
+            max={12}
+            step={1}
+            value={s.paraGapPt}
+            onChange={(e) => set({paraGapPt: Number(e.target.value)})}
+            className="w-full"
+          />
         </Row>
         <Row label={`حجم النص: ${s.fontSizePt}pt`}>
           <input
@@ -182,10 +271,46 @@ export function PrintSettingsPanel() {
             className="w-full"
           />
         </Row>
+        <div className="col-span-2 md:col-span-3 flex flex-wrap gap-4 mt-1 text-sm">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={s.safePrint}
+              onChange={(e) => set({safePrint: e.target.checked})}
+            />
+            <span>
+              <b>طباعة آمنة للحروف العربية</b>
+              <span className="block text-xs text-slate-500">تمنع انفصال الحروف وتقطيع النقاط (مستحسن)</span>
+            </span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={s.avoidBreak}
+              onChange={(e) => set({avoidBreak: e.target.checked})}
+            />
+            <span>
+              <b>منع تقطيع الجداول والمواد</b>
+              <span className="block text-xs text-slate-500">يبقي كل مادة وجدول في صفحة واحدة قدر الإمكان</span>
+            </span>
+          </label>
+        </div>
       </div>
       <button onClick={reset} className="mt-3 text-xs text-slate-500 underline">
         استعادة أبعاد A4 الافتراضية
       </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={testPrintReadiness}
+          className="px-3 py-1.5 text-xs rounded-lg font-bold bg-teal-700 hover:bg-teal-800 text-white transition"
+        >
+          🔍 تجربة الطباعة / فحص التشوهات
+        </button>
+        <span className="text-[11px] text-slate-500 self-center">
+          يفحص انفصال الحروف، النقاط الناقصة، والعناصر المقطوعة قبل الطباعة
+        </span>
+      </div>
     </details>
   );
 }

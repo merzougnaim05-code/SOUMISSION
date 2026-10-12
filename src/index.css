@@ -9,6 +9,8 @@
   --doc-pad-h: 15mm;
   --doc-table-font: 11.5pt;
   --doc-title-size: 17pt;
+  --doc-align: justify;
+  --doc-para-gap: 4pt;
 }
 
 html,
@@ -64,8 +66,19 @@ input[type='time'] {
   line-height: var(--doc-line);
   position: relative;
   page-break-after: always;
+  break-after: page;
+  direction: rtl;
+  unicode-bidi: embed;
+  text-align: var(--doc-align);
   overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
+  font-kerning: normal;
+  font-feature-settings: "liga" 1, "calt" 1, "rlig" 1;
+  font-variant-ligatures: contextual common-ligatures;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -77,7 +90,10 @@ input[type='time'] {
   border-collapse: collapse;
   font-size: var(--doc-table-font);
   table-layout: fixed;
-  overflow-wrap: anywhere;
+  /* مهم للعربية: anywhere كان يقطع الكلمة وسط الحروف فيكسر التشكيل */
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 .doc-page .table-doc th,
 .doc-page .table-doc td {
@@ -110,9 +126,58 @@ input[type='time'] {
 .doc-page p {
   orphans: 3;
   widows: 3;
+  text-align: var(--doc-align);
+  margin: 0 0 var(--doc-para-gap);
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+/* Mise en forme: أي عنصر كان مضبوطاً justify يتبع اختيار المستخدم فوراً */
+.doc-page [style*="justify"] {
+  text-align: var(--doc-align) !important;
+}
+/* وضع الطباعة الآمنة: أسود خالص + منع أي كسر داخل الكلمة يحطم تشكيل الحروف */
+.safe-print .doc-page,
+.safe-print .doc-page * {
+  text-shadow: none !important;
+  letter-spacing: normal !important;
+  word-spacing: normal;
+}
+.safe-print .doc-page {
+  color: #000 !important;
 }
 .doc-art {
   margin-top: 8pt;
+  break-inside: auto;
+}
+.doc-art > div:first-child {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+.doc-art p {
+  break-inside: auto;
+}
+/* منع تقطيع العناصر الحساسة وسط الصفحة عند الطباعة */
+.doc-title,
+.table-doc,
+.doc-art {
+  page-break-inside: auto;
+}
+.avoid-break .doc-art,
+.avoid-break .table-doc,
+.avoid-break .doc-title {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.table-doc tr,
+.table-doc thead,
+.table-doc tbody {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.table-doc td,
+.table-doc th {
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 .doc-art b {
   text-decoration: underline;
@@ -148,5 +213,18 @@ input[type='time'] {
     min-height: 0;
     margin: 0 auto;
     padding: var(--doc-pad-v) var(--doc-pad-h);
+    overflow: visible;
+  }
+  /* إصلاح النقاط والحروف المقطوعة آخر الورقة: لا تقسيم قسري داخل السطر */
+  .doc-page p,
+  .doc-page li,
+  .doc-art p {
+    orphans: 3;
+    widows: 3;
+  }
+  .doc-dotline,
+  .doc-fill {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

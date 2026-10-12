@@ -28,10 +28,12 @@ export function HeatTextsPage() {
   };
   const add = (sec: 'inst' | 'ccap' | 'cpc') => {
     const nextNum = articles.filter((a) => a.section === sec).length + 1;
-    setArticles([
-      ...articles,
-      {id: `ha-custom-${sec}-${Date.now()}`, section: sec, titre: `المادة ${nextNum}: `, corps: ''},
-    ]);
+    const id = `ha-custom-${sec}-${Date.now()}`;
+    setArticles([...articles, {id, section: sec, titre: `المادة ${nextNum}: `, corps: 'نص المادة...'}]);
+    // التمرير التلقائي نحو المادة الجديدة حتى يراها المستخدم فوراً
+    setTimeout(() => {
+      document.getElementById(`heat-article-${id}`)?.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }, 50);
   };
 
   const bySection = (sec: 'inst' | 'ccap' | 'cpc') => articles.filter((a) => a.section === sec);
@@ -64,7 +66,7 @@ export function HeatTextsPage() {
           </div>
           <div className="space-y-3">
             {bySection(sec).map((a) => (
-              <div key={a.id} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50">
+              <div key={a.id} id={`heat-article-${a.id}`} className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 scroll-mt-4">
                 <input
                   className="app-input font-bold mb-2"
                   value={a.titre}
@@ -72,7 +74,7 @@ export function HeatTextsPage() {
                 />
                 <textarea
                   className="app-input leading-7"
-                  rows={Math.min(10, Math.max(2, a.corps.split('\n').length + 1))}
+                  rows={Math.min(10, Math.max(2, (a.corps ?? '').split('\n').length + 1))}
                   value={a.corps}
                   onChange={(e) => update(a.id, {corps: e.target.value})}
                   style={{textAlign: 'justify'}}

@@ -48,7 +48,7 @@ const DOCS: {
 
 export function HeatDocumentsPage() {
   const {state} = useHeat();
-  const {vars} = usePrint();
+  const {vars, settings: printSettings} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [entrepreneurId, setEntrepreneurId] = useState(state.entrepreneurs[0]?.id ?? '');
   const printRef = useRef<HTMLDivElement>(null);
@@ -163,7 +163,11 @@ export function HeatDocumentsPage() {
           )}
         </div>
         <PrintSettingsPanel />
-        <div ref={printRef} className="print-area doc-scroll rounded-xl" style={vars}>
+        <div
+          ref={printRef}
+          className={`print-area doc-scroll rounded-xl ${printSettings.safePrint ? 'safe-print' : ''} ${printSettings.avoidBreak ? 'avoid-break' : ''}`}
+          style={{...vars}}
+        >
           {renderDoc()}
         </div>
       </div>
