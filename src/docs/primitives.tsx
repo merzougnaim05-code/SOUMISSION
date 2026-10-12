@@ -57,10 +57,16 @@ export function Dot({width = '40mm'}: {width?: string}) {
 
 /** مادة نصية في دفتر الشروط */
 export function Article({titre, corps}: {titre: string; corps: string[]}) {
+  // كل سطر في فقرة مستقلة: السطور القصيرة داخل نفس الفقرة كانت تُمدَّد
+  // بعرض الصفحة بسبب justify فتظهر كلمات متباعدة — الفصل يمنع ذلك
+  const lines = corps
+    .flatMap((c) => (c ?? '').split(/\n/))
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
   return (
     <div className="doc-art">
       <div style={{fontWeight: 700}}>{titre}</div>
-      {corps.map((p, i) => (
+      {lines.map((p, i) => (
         <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '12.5pt'}}>
           {p}
         </p>

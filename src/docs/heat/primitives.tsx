@@ -41,13 +41,15 @@ export function HArticle({titre, corps}: {titre: string; corps: string}) {
   return (
     <div className="doc-art">
       <div style={{fontWeight: 700}}>{titre}</div>
-      {corps.split(/\n+/).map((p, i) =>
-        p.trim() ? (
+      {corps
+        .split(/\n+/)
+        .map((p) => p.trim())
+        .filter((p) => p.length > 0)
+        .map((p, i) => (
           <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '11.5pt'}}>
             {p}
           </p>
-        ) : null,
-      )}
+        ))}
     </div>
   );
 }

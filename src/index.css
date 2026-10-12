@@ -10,6 +10,7 @@
   --doc-table-font: 11.5pt;
   --doc-title-size: 17pt;
   --doc-align: justify;
+  --doc-align-last: right;
   --doc-para-gap: 4pt;
 }
 
@@ -127,6 +128,8 @@ input[type='time'] {
   orphans: 3;
   widows: 3;
   text-align: var(--doc-align);
+  /* السطر الأخير يبقى ملتصقاً باليمين ولا يتمدد — يمنع الكلمات المتباعدة */
+  text-align-last: var(--doc-align-last, right);
   margin: 0 0 var(--doc-para-gap);
   overflow-wrap: break-word;
   word-break: normal;
@@ -134,6 +137,7 @@ input[type='time'] {
 /* Mise en forme: أي عنصر كان مضبوطاً justify يتبع اختيار المستخدم فوراً */
 .doc-page [style*="justify"] {
   text-align: var(--doc-align) !important;
+  text-align-last: var(--doc-align-last, right) !important;
 }
 /* وضع الطباعة الآمنة: أسود خالص + منع أي كسر داخل الكلمة يحطم تشكيل الحروف */
 .safe-print .doc-page,

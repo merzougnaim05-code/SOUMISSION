@@ -81,6 +81,7 @@ export function PrintProvider({children}: {children: ReactNode}) {
       '--doc-table-font': `${settings.tableFontPt}pt`,
       '--doc-title-size': `${settings.titlePt}pt`,
       '--doc-align': settings.align,
+      '--doc-align-last': settings.align === 'justify' ? 'right' : settings.align,
       '--doc-para-gap': `${settings.paraGapPt}pt`,
     } as CSSProperties;
     return {

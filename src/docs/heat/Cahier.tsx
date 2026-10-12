@@ -55,9 +55,10 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
             {list.map((a) => (
               <div key={a.id} className="doc-art">
                 <div style={{fontWeight: 700}}>{a.titre}</div>
-                {a.corps
+                {(a.corps ?? '')
                   .split(/\n+/)
-                  .filter((p) => p.trim())
+                  .map((p) => p.trim())
+                  .filter((p) => p.length > 0)
                   .map((p, i) => (
                     <p
                       key={i}
