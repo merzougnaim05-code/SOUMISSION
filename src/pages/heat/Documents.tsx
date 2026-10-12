@@ -1,7 +1,7 @@
 import {useRef, useState} from 'react';
 import {useHeat} from '../../heatStore';
 import {Btn} from '../../ui';
-import {usePrint, PrintSettingsPanel} from '../../printSettings';
+import {usePrint, PrintSettingsPanel, printWithAutoFix} from '../../printSettings';
 import {gotoHeatTab, type HeatTab} from '../../shellNav';
 import {exportWord} from '../../exportWord';
 import {exportHeatExcel} from '../../exportHeatExcel';
@@ -48,7 +48,7 @@ const DOCS: {
 
 export function HeatDocumentsPage() {
   const {state} = useHeat();
-  const {vars, settings: printSettings} = usePrint();
+  const {vars, settings: printSettings, set: setPrint} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [entrepreneurId, setEntrepreneurId] = useState(state.entrepreneurs[0]?.id ?? '');
   const printRef = useRef<HTMLDivElement>(null);
@@ -132,7 +132,7 @@ export function HeatDocumentsPage() {
 
       <div className="flex-1 min-w-0">
         <div className="no-print flex flex-wrap items-center gap-3 bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-4">
-          <Btn onClick={() => window.print()}>🖨 طباعة / حفظ PDF</Btn>
+          <Btn onClick={() => printWithAutoFix(setPrint)}>🖨 طباعة آمنة / حفظ PDF</Btn>
           <Btn variant="ghost" onClick={() => exportWord(printRef.current, `${docFileName()}.doc`)}>
             ⬇ تحميل Word
           </Btn>

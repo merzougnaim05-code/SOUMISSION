@@ -1,7 +1,7 @@
 import {useRef, useState} from 'react';
 import {rankLot, useStore} from '../store';
 import {Btn} from '../ui';
-import {usePrint, PrintSettingsPanel} from '../printSettings';
+import {usePrint, PrintSettingsPanel, printWithAutoFix} from '../printSettings';
 import {exportWord} from '../exportWord';
 import {exportExcel} from '../exportExcel';
 import {AnnonceDoc} from '../docs/Annonce';
@@ -45,7 +45,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
 
 export function DocumentsPage() {
   const {state} = useStore();
-  const {vars, settings: printSettings} = usePrint();
+  const {vars, settings: printSettings, set: setPrint} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
   const [bidderId, setBidderId] = useState(state.bidders[0]?.id ?? '');
@@ -110,7 +110,7 @@ export function DocumentsPage() {
       {/* منطقة المعاينة والطباعة */}
       <div className="flex-1 min-w-0">
         <div className="no-print flex flex-wrap items-center gap-3 bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-4">
-          <Btn onClick={() => window.print()}>🖨 طباعة / حفظ PDF</Btn>
+          <Btn onClick={() => printWithAutoFix(setPrint)}>🖨 طباعة آمنة / حفظ PDF</Btn>
           <Btn variant="ghost" onClick={() => exportWord(printRef.current, `${fileName(state, docKey, lotId, bidderId)}.doc`)}>
             ⬇ تحميل Word
           </Btn>

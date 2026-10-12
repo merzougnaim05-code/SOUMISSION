@@ -164,6 +164,21 @@ export function testPrintReadiness() {
   }
 }
 
+/** طباعة آمنة تلقائية: تُصلح أسباب التشوهات آلياً قبل الطباعة ثم تطبع.
+ *  1) تفعيل الطباعة الآمنة + منع التقطيع تلقائياً
+ *  2) انتظار تحميل خط Amiri (السبب الأول لانفصال الحروف)
+ *  3) مهلة قصيرة لإعادة رسم الصفحة ثم window.print() */
+export async function printWithAutoFix(set: (p: Partial<PrintSettings>) => void) {
+  set({safePrint: true, avoidBreak: true});
+  try {
+    await (document as Document & {fonts?: {ready: Promise<unknown>}}).fonts?.ready;
+  } catch {
+    /* تجاهل — الطباعة تستمر بالخط البديل */
+  }
+  await new Promise((r) => setTimeout(r, 200));
+  window.print();
+}
+
 /** لوحة ضبط أبعاد وخط الوثائق — تُحفظ تلقائياً في المتصفح */
 export function PrintSettingsPanel() {
   const {settings: s, set, reset} = usePrint();
