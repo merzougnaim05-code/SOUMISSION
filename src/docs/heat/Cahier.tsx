@@ -1,6 +1,6 @@
 import {useHeat} from '../../heatStore';
 import {HeatHeader, HPage, HSign} from './primitives';
-import {withDots, hasDotRuns} from '../primitives';
+import {withDots, docParagraphAlign} from '../primitives';
 
 type CahierSection = 'inst' | 'ccap' | 'cpc';
 
@@ -65,7 +65,7 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
                       key={i}
                       style={{
                         whiteSpace: 'pre-line',
-                        textAlign: hasDotRuns(p) ? 'right' : 'justify',
+                        textAlign: docParagraphAlign(p),
                         fontSize: '11.5pt',
                         lineHeight: 1.55,
                       }}

@@ -60,6 +60,13 @@ export function Dot({width = '40mm'}: {width?: string}) {
 export function hasDotRuns(text: string): boolean {
   return /\.{3,}/.test(text ?? '');
 }
+
+/** محاذاة فقرة دفتر الشروط: النقاط/المراجع اللاتينية = يمين، العربية الصرفة = مضبوط.
+ *  الخلط العربي/اللاتيني مع justify ينتج فجوات هائلة (قيست حتى 658px) */
+export function docParagraphAlign(text: string): 'justify' | 'right' {
+  if (!text) return 'justify';
+  return /\.{3,}|[A-Za-z]{3,}/.test(text) ? 'right' : 'justify';
+}
 export function withDots(text: string): ReactNode {
   // نكسر داخل: (1) سلاسل النقاط  (2) المراجع اللاتينية الطويلة NFA 33-102 / 15-247
   // لأن كتلها غير القابلة للانكسار تخلق أسطراً يتيمة يمدد justify مسافاتها بشدة
@@ -90,7 +97,7 @@ export function Article({titre, corps}: {titre: string; corps: string[]}) {
       {lines.map((p, i) => (
         <p
           key={i}
-          style={{whiteSpace: 'pre-line', textAlign: hasDotRuns(p) ? 'right' : 'justify', fontSize: '12.5pt'}}
+          style={{whiteSpace: 'pre-line', textAlign: docParagraphAlign(p), fontSize: '12.5pt'}}
         >
           {withDots(p)}
         </p>

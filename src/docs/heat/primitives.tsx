@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {withDots} from '../primitives';
+import {withDots, docParagraphAlign} from '../primitives';
 import {useHeat} from '../../heatStore';
 
 export function HeatHeader() {
@@ -49,7 +49,7 @@ export function HArticle({titre, corps}: {titre: string; corps: string}) {
         .map((p, i) => (
           <p
             key={i}
-            style={{whiteSpace: 'pre-line', textAlign: hasDotRuns(p) ? 'right' : 'justify', fontSize: '11.5pt'}}
+            style={{whiteSpace: 'pre-line', textAlign: docParagraphAlign(p), fontSize: '11.5pt'}}
           >
             {withDots(p)}
           </p>
