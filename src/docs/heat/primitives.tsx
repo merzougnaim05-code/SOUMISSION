@@ -47,7 +47,10 @@ export function HArticle({titre, corps}: {titre: string; corps: string}) {
         .map((p) => p.trim())
         .filter((p) => p.length > 0)
         .map((p, i) => (
-          <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '11.5pt'}}>
+          <p
+            key={i}
+            style={{whiteSpace: 'pre-line', textAlign: hasDotRuns(p) ? 'right' : 'justify', fontSize: '11.5pt'}}
+          >
             {withDots(p)}
           </p>
         ))}

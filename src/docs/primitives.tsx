@@ -55,8 +55,11 @@ export function Dot({width = '40mm'}: {width?: string}) {
   return <span className="doc-fill" style={{minWidth: width}}>&nbsp;</span>;
 }
 
-/** يجعل سلاسل النقاط (......) قابلة للانكسار عند نهاية السطر.
- *  بدون هذا، كل سلسلة نقاط = كلمة واحدة ضخمة عند justify → الشد المتباعد للكلمات */
+/** يحدد إن كانت الفقرة تحوي سلاسل نقاط (.....) — فهذه الفقرات يجب ألا تُشدَّ (justify)
+ *  لأن عدد المسافات فيها قليل جداً فيصبح الشد فجوات ضخمة؛ تكفي محاذاة يمين */
+export function hasDotRuns(text: string): boolean {
+  return /\.{6,}/.test(text ?? '');
+}
 export function withDots(text: string): ReactNode {
   const parts = (text ?? '').split(/(\.{6,})/g);
   if (parts.length === 1) return text;
@@ -83,7 +86,10 @@ export function Article({titre, corps}: {titre: string; corps: string[]}) {
     <div className="doc-art">
       <div style={{fontWeight: 700}}>{titre}</div>
       {lines.map((p, i) => (
-        <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '12.5pt'}}>
+        <p
+          key={i}
+          style={{whiteSpace: 'pre-line', textAlign: hasDotRuns(p) ? 'right' : 'justify', fontSize: '12.5pt'}}
+        >
           {withDots(p)}
         </p>
       ))}

@@ -1,6 +1,6 @@
 import {useHeat} from '../../heatStore';
 import {HeatHeader, HPage, HSign} from './primitives';
-import {withDots} from '../primitives';
+import {withDots, hasDotRuns} from '../primitives';
 
 type CahierSection = 'inst' | 'ccap' | 'cpc';
 
@@ -63,7 +63,12 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
                   .map((p, i) => (
                     <p
                       key={i}
-                      style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '11.5pt', lineHeight: 1.55}}
+                      style={{
+                        whiteSpace: 'pre-line',
+                        textAlign: hasDotRuns(p) ? 'right' : 'justify',
+                        fontSize: '11.5pt',
+                        lineHeight: 1.55,
+                      }}
                     >
                       {withDots(p)}
                     </p>
