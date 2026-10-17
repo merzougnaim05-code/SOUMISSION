@@ -124,8 +124,9 @@ input[type='time'] {
   text-decoration: underline;
   margin: 6pt 0 10pt;
 }
-/* سلاسل النقاط (......) تنكسر عند نهاية السطر — يمنع الشد المتباعد للكلمات عند justify */
+/* سلاسل النقاط والمراجع اللاتينية: وحدة معزولة لا تمدها محاذاة justify */
 .doc-page .doc-dots {
+  display: inline-block;
   word-break: break-all;
   overflow-wrap: anywhere;
   unicode-bidi: isolate;
