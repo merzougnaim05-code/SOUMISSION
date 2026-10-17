@@ -72,15 +72,24 @@ export function withDots(text: string): ReactNode {
   // لأن كتلها غير القابلة للانكسار تخلق أسطراً يتيمة يمدد justify مسافاتها بشدة
   const parts = (text ?? '').split(/(\.{3,}|[A-Za-z][A-Za-z0-9/# .-]{8,})/g);
   if (parts.length === 1) return text;
-  return parts.map((p, i) =>
-    /^(\.{3,}|[A-Za-z][A-Za-z0-9/# .-]{8,})$/.test(p) ? (
-      <span key={i} className="doc-dots">
-        {p}
-      </span>
-    ) : (
-      p
-    ),
-  );
+  return parts.map((p, i) => {
+    if (/^\.{3,}$/.test(p)) {
+      return (
+        <span key={i} className="doc-dots">
+          {p}
+        </span>
+      );
+    }
+    if (/^[A-Za-z]/.test(p)) {
+      // مرجع لاتيني: اتجاه وتيرتيبي مضمونان لمنع إعادة ترتيب bidi التي تفرغ سطراً وسطياً
+      return (
+        <span key={i} className="doc-dots" dir="ltr" style={{unicodeBidi: 'bidi-override'}}>
+          {p}
+        </span>
+      );
+    }
+    return p;
+  });
 }
 
 /** مادة نصية في دفتر الشروط */

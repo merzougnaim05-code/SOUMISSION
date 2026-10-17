@@ -128,7 +128,8 @@ input[type='time'] {
 .doc-page .doc-dots {
   word-break: break-all;
   overflow-wrap: anywhere;
-  unicode-bidi: embed;
+  unicode-bidi: isolate;
+  direction: ltr;
 }
 .doc-page p {
   orphans: 3;
