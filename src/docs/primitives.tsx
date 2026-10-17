@@ -61,10 +61,12 @@ export function hasDotRuns(text: string): boolean {
   return /\.{3,}/.test(text ?? '');
 }
 export function withDots(text: string): ReactNode {
-  const parts = (text ?? '').split(/(\.{6,})/g);
+  // نكسر داخل: (1) سلاسل النقاط  (2) المراجع اللاتينية الطويلة NFA 33-102 / 15-247
+  // لأن كتلها غير القابلة للانكسار تخلق أسطراً يتيمة يمدد justify مسافاتها بشدة
+  const parts = (text ?? '').split(/(\.{3,}|[A-Za-z][A-Za-z0-9/# .-]{8,})/g);
   if (parts.length === 1) return text;
   return parts.map((p, i) =>
-    /^\.{6,}$/.test(p) ? (
+    /^(\.{3,}|[A-Za-z][A-Za-z0-9/# .-]{8,})$/.test(p) ? (
       <span key={i} className="doc-dots">
         {p}
       </span>
