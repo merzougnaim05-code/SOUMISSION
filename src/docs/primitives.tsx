@@ -58,7 +58,7 @@ export function Dot({width = '40mm'}: {width?: string}) {
 /** يحدد إن كانت الفقرة تحوي سلاسل نقاط (.....) — فهذه الفقرات يجب ألا تُشدَّ (justify)
  *  لأن عدد المسافات فيها قليل جداً فيصبح الشد فجوات ضخمة؛ تكفي محاذاة يمين */
 export function hasDotRuns(text: string): boolean {
-  return /\.{6,}/.test(text ?? '');
+  return /\.{3,}/.test(text ?? '');
 }
 export function withDots(text: string): ReactNode {
   const parts = (text ?? '').split(/(\.{6,})/g);
