@@ -1,4 +1,5 @@
 import type {ReactNode} from 'react';
+import {withDots} from '../primitives';
 import {useHeat} from '../../heatStore';
 
 export function HeatHeader() {
@@ -47,7 +48,7 @@ export function HArticle({titre, corps}: {titre: string; corps: string}) {
         .filter((p) => p.length > 0)
         .map((p, i) => (
           <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '11.5pt'}}>
-            {p}
+            {withDots(p)}
           </p>
         ))}
     </div>

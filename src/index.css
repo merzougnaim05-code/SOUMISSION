@@ -124,6 +124,12 @@ input[type='time'] {
   text-decoration: underline;
   margin: 6pt 0 10pt;
 }
+/* سلاسل النقاط (......) تنكسر عند نهاية السطر — يمنع الشد المتباعد للكلمات عند justify */
+.doc-page .doc-dots {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  unicode-bidi: embed;
+}
 .doc-page p {
   orphans: 3;
   widows: 3;

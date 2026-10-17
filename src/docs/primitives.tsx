@@ -55,6 +55,22 @@ export function Dot({width = '40mm'}: {width?: string}) {
   return <span className="doc-fill" style={{minWidth: width}}>&nbsp;</span>;
 }
 
+/** يجعل سلاسل النقاط (......) قابلة للانكسار عند نهاية السطر.
+ *  بدون هذا، كل سلسلة نقاط = كلمة واحدة ضخمة عند justify → الشد المتباعد للكلمات */
+export function withDots(text: string): ReactNode {
+  const parts = (text ?? '').split(/(\.{6,})/g);
+  if (parts.length === 1) return text;
+  return parts.map((p, i) =>
+    /^\.{6,}$/.test(p) ? (
+      <span key={i} className="doc-dots">
+        {p}
+      </span>
+    ) : (
+      p
+    ),
+  );
+}
+
 /** مادة نصية في دفتر الشروط */
 export function Article({titre, corps}: {titre: string; corps: string[]}) {
   // كل سطر في فقرة مستقلة: السطور القصيرة داخل نفس الفقرة كانت تُمدَّد
@@ -68,7 +84,7 @@ export function Article({titre, corps}: {titre: string; corps: string[]}) {
       <div style={{fontWeight: 700}}>{titre}</div>
       {lines.map((p, i) => (
         <p key={i} style={{whiteSpace: 'pre-line', textAlign: 'justify', fontSize: '12.5pt'}}>
-          {p}
+          {withDots(p)}
         </p>
       ))}
     </div>
