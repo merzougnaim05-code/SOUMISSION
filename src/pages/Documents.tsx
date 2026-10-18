@@ -4,6 +4,7 @@ import {Btn} from '../ui';
 import {usePrint, PrintSettingsPanel, printWithAutoFix} from '../printSettings';
 import {exportWord} from '../exportWord';
 import {exportExcel} from '../exportExcel';
+import {importConsultationFile} from '../importExcel';
 import {AnnonceDoc} from '../docs/Annonce';
 import {BesoinsDoc} from '../docs/Besoins';
 import {CandidatureDoc} from '../docs/Candidature';
@@ -44,12 +45,94 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
 ];
 
 export function DocumentsPage() {
-  const {state} = useStore();
+  const {state, setSettings, setLots, setBidders, setOffers} = useStore();
   const {vars, settings: printSettings, set: setPrint} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
   const [bidderId, setBidderId] = useState(state.bidders[0]?.id ?? '');
   const printRef = useRef<HTMLDivElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
+
+  /** استيراد بيانات من ملف Excel وإدماجها في الحالة الحالية */
+  const onImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      const res = await importConsultationFile(f);
+      const summary: string[] = [];
+
+      // الحصص والمواد: الدمج بحسب رقم الحصة مع الحفاظ على المعرفات الحالية
+      let mergedLots = state.lots;
+      if (res.lots.length > 0) {
+        mergedLots = state.lots.map((l) => {
+          const nl = res.lots.find((x) => x.numero === l.numero);
+          if (!nl) return l;
+          return {
+            ...l,
+            nom: nl.nom || l.nom,
+            materiaux: nl.materiaux.length > 0 ? nl.materiaux : l.materiaux,
+          };
+        });
+        for (const nl of res.lots) {
+          if (!mergedLots.some((l) => l.numero === nl.numero)) mergedLots.push(nl);
+        }
+        setLots(mergedLots);
+        summary.push(`• ${res.lots.length} حصص مع موادّها`);
+      }
+
+      // المتعهدين: إضافة الجدد فقط (بدون تكرار)
+      let bidders = [...state.bidders];
+      if (res.bidders.length > 0) {
+        const known = new Set(state.bidders.map((b) => `${b.nom}|${b.rc}`));
+        const add = res.bidders.filter((b) => !known.has(`${b.nom}|${b.rc}`));
+        if (add.length > 0) {
+          bidders = [...bidders, ...add];
+          setBidders(bidders);
+          summary.push(`• ${add.length} متعهدين`);
+        }
+      }
+
+      // العروض (الأسعار الوحدوية)
+      if (res.offers.length > 0) {
+        const offers = [...state.offers];
+        let added = 0;
+        for (const ref of res.offers) {
+          const lot = mergedLots.find((l) => l.numero === ref.lotNumero);
+          const b = bidders.find((x) => x.nom === res.bidders[ref.bidderIndex]?.nom);
+          if (!lot || !b) continue;
+          const prix: Record<string, number> = {};
+          lot.materiaux.forEach((mm, i) => {
+            const p = ref.prixRows[i];
+            if (p > 0) prix[mm.id] = p;
+          });
+          if (Object.keys(prix).length === 0) continue;
+          const idx = offers.findIndex((o) => o.bidderId === b.id && o.lotId === lot.id);
+          if (idx >= 0) offers[idx] = {...offers[idx], prix: {...offers[idx].prix, ...prix}};
+          else offers.push({bidderId: b.id, lotId: lot.id, prix});
+          added += 1;
+        }
+        if (added > 0) {
+          setOffers(offers);
+          summary.push(`• ${added} عرضاً بالأسعار`);
+        }
+      }
+
+      // المعطيات العامة
+      if (Object.keys(res.settings).length > 0) {
+        setSettings(res.settings);
+        summary.push('• المعطيات العامة للمؤسسة');
+      }
+
+      window.alert(
+        `تم الاستيراد من «${f.name}» بنجاح:\n` +
+          (summary.join('\n') || 'لا توجد بيانات جديدة') +
+          (res.notes.length ? `\n\nملاحظات:\n- ${res.notes.join('\n- ')}` : ''),
+      );
+    } catch (err) {
+      window.alert('فشل الاستيراد: ' + (err instanceof Error ? err.message : String(err)));
+    }
+    e.target.value = '';
+  };
 
   const meta = DOCS.find((d) => d.key === docKey)!;
   const winnerOfLot = (l: string) => {
@@ -117,6 +200,16 @@ export function DocumentsPage() {
           <Btn variant="ghost" onClick={() => exportExcel(state, `الاستشارة ${state.settings.annee}.xlsx`)}>
             ⬇ تحميل Excel (كل البيانات)
           </Btn>
+          <Btn variant="ghost" onClick={() => importRef.current?.click()}>
+            📥 استيراد بيانات من Excel
+          </Btn>
+          <input
+            ref={importRef}
+            type="file"
+            accept=".xlsx,.xlsb,.xls"
+            className="hidden"
+            onChange={(e) => void onImportFile(e)}
+          />
           <span className="text-sm text-slate-500">{meta.label}</span>
           <span className="text-xs text-slate-400">
             لتعديل نصوص دفتر الشروط: تبويب «دفاتر الشروط» أعلاه

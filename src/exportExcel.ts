@@ -36,10 +36,18 @@ export function exportExcel(state: AppState, filename: string) {
 
   // ورقة لكل حصة: المواد + عروض المتعهدين + التقييم
   for (const lot of state.lots) {
-    const header = ['الرقم', 'تعيين المادة', 'الوحدة', 'الكمية الدنيا', 'الكمية القصوى', 'السعر المرجعي (دج)'];
     const biddersOnLot = state.bidders.filter((b) =>
       state.offers.some((o) => o.bidderId === b.id && o.lotId === lot.id),
     );
+    const header = [
+      'الرقم',
+      'تعيين المادة',
+      'الوحدة',
+      'الكمية الدنيا',
+      'الكمية القصوى',
+      'السعر المرجعي (دج)',
+      ...biddersOnLot.map((b) => `عرض ${b.nom}`),
+    ];
     const rows: (string | number)[][] = [header];
     lot.materiaux.forEach((mm, i) => {
       const row: (string | number)[] = [i + 1, mm.designation, mm.unite, mm.qteMin, mm.qteMax, mm.prixRef];
