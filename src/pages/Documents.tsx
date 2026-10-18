@@ -6,6 +6,20 @@ import {exportWord} from '../exportWord';
 import {exportExcel} from '../exportExcel';
 import {importConsultationFile} from '../importExcel';
 import {AnnonceDoc} from '../docs/Annonce';
+import {
+  AnnonceFinaleDoc,
+  AzharDoc,
+  CoefficientDoc,
+  ConseilAppelDoc,
+  ConseilCahierDoc,
+  ConseilExtractDoc,
+  DossierCandidatureDoc,
+  EtapesDoc,
+  FichePrestataireDoc,
+  IqrarDoc,
+  NegotiationDoc,
+  NyzahaDoc,
+} from '../docs/annexes';
 import {BesoinsDoc} from '../docs/Besoins';
 import {CandidatureDoc} from '../docs/Candidature';
 import {CahierTechniqueDoc} from '../docs/CahierTechnique';
@@ -28,7 +42,19 @@ type DocKey =
   | 'comparaison'
   | 'resultats'
   | 'contrat'
-  | 'invitation';
+  | 'invitation'
+  | 'nyzaha'
+  | 'iqrar'
+  | 'coef'
+  | 'pv-cahier'
+  | 'pv-eval'
+  | 'pv-eaux'
+  | 'annonce-finale'
+  | 'azhar'
+  | 'fiche-moun'
+  | 'negoce'
+  | 'etapes'
+  | 'dossier';
 
 const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needsBidder?: boolean}[] = [
   {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات ملف الترشح والعرض التقني والمالي'},
@@ -42,6 +68,18 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'comparaison', label: 'جدول مقارنة العروض', desc: 'مقارنة وتقييم العروض المالية لكل حصة مع الترتيب', needsLot: true},
   {key: 'resultats', label: 'إعلان نتائج الاستشارة', desc: 'جدول الفائزين بالمنح المؤقت للاتفاقية'},
   {key: 'contrat', label: 'عقد تموين', desc: 'العقد الكامل مع مبلغ الاتفاقية تفقيطاً', needsLot: true, needsBidder: true},
+  {key: 'nyzaha', label: 'التصريح بالنزاهة', desc: 'صيغة القانون 23-12 / من وثائق ملف الترشح', needsBidder: true},
+  {key: 'iqrar', label: 'إقرار التعهد بالأسعار', desc: 'إقرار المطابقة + جدول أسعار الاتفاقية لكل حصة', needsLot: true, needsBidder: true},
+  {key: 'coef', label: 'جدول الأسعار بالمعامل', desc: 'جدول معامل الأسعار لكل حصة (يُملأ يدوياً)', needsLot: true},
+  {key: 'pv-cahier', label: 'محضر المصادقة على دفاتر الشروط', desc: 'جلسة مجلس التوجيه والتسيير للمصادقة'},
+  {key: 'pv-eval', label: 'مستخرج محضر مجلس التربية والتسيير', desc: 'جلسة تقييم العروض والمنح المؤقت مع الجداول'},
+  {key: 'pv-eaux', label: 'محضر دراسة الطعون', desc: 'جلسة المجلس للفصل في طعن متعهد'},
+  {key: 'annonce-finale', label: 'إعلان عن المنح النهائي', desc: 'بعد انتهاء آجال الطعون — جدول المنح النهائي'},
+  {key: 'azhar', label: 'إعذار الممون', desc: 'في حال الإخلال ببنود الاتفاقية', needsLot: true},
+  {key: 'fiche-moun', label: 'ملف الممون', desc: 'بطاقة معطيات الممون (سجل تجاري، جباية، بنك)', needsLot: true, needsBidder: true},
+  {key: 'negoce', label: 'محضر التفاوض / مراجعة الأسعار', desc: 'محضران أسعار المواد والكميات الجديدة', needsLot: true, needsBidder: true},
+  {key: 'etapes', label: 'خطوات تنفيذ الاستشارة', desc: 'جدول خطوات الإجراءات الإدارية'},
+  {key: 'dossier', label: 'ملف الترشح — الغلاف', desc: 'غلاف دفتر الشروط وصفحة وصف الاستشارة'},
 ];
 
 export function DocumentsPage() {
@@ -166,6 +204,30 @@ export function DocumentsPage() {
         return <ResultatsDoc />;
       case 'contrat':
         return <ContratDoc bidderId={bidderId || winnerOfLot(lotId)} lotId={lotId} />;
+      case 'nyzaha':
+        return <NyzahaDoc bidderId={bidderId} />;
+      case 'iqrar':
+        return <IqrarDoc lotId={lotId} bidderId={bidderId || winnerOfLot(lotId)} />;
+      case 'coef':
+        return <CoefficientDoc lotId={lotId} />;
+      case 'pv-cahier':
+        return <ConseilCahierDoc />;
+      case 'pv-eval':
+        return <ConseilExtractDoc />;
+      case 'pv-eaux':
+        return <ConseilAppelDoc />;
+      case 'annonce-finale':
+        return <AnnonceFinaleDoc />;
+      case 'azhar':
+        return <AzharDoc lotId={lotId} />;
+      case 'fiche-moun':
+        return <FichePrestataireDoc lotId={lotId} bidderId={bidderId} />;
+      case 'negoce':
+        return <NegotiationDoc lotId={lotId} bidderId={bidderId} />;
+      case 'etapes':
+        return <EtapesDoc />;
+      case 'dossier':
+        return <DossierCandidatureDoc />;
     }
   };
 
@@ -270,6 +332,18 @@ function fileName(
     comparaison: `مقارنة العروض - ${lot?.nom ?? ''}`,
     resultats: 'إعلان نتائج الاستشارة',
     contrat: `عقد تموين - ${lot?.nom ?? ''} - ${bidder?.nom ?? ''}`,
+    nyzaha: 'التصريح بالنزاهة',
+    iqrar: `إقرار الأسعار - ${lot?.nom ?? ''} - ${bidder?.nom ?? ''}`,
+    coef: `جدول الأسعار بالمعامل - ${lot?.nom ?? ''}`,
+    'pv-cahier': 'محضر المصادقة على دفاتر الشروط',
+    'pv-eval': 'مستخرج محضر مجلس التربية والتسيير',
+    'pv-eaux': 'محضر دراسة الطعون',
+    'annonce-finale': 'إعلان عن المنح النهائي',
+    azhar: 'إعذار الممون',
+    'fiche-moun': `ملف الممون - ${bidder?.nom ?? ''}`,
+    negoce: `محضر التفاوض - ${lot?.nom ?? ''}`,
+    etapes: 'خطوات تنفيذ الاستشارة',
+    dossier: 'ملف الترشح - الغلاف',
   };
   return names[docKey];
 }
