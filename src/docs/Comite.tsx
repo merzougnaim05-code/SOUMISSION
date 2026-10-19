@@ -5,7 +5,8 @@ import {FreeAt, Page, SignRow} from './primitives';
 export function ComiteDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const {president, membres} = state.committee;
+  const {president} = state.committee;
+  const membres = state.committee.membres.filter((m) => m.trim());
 
   return (
     <Page>

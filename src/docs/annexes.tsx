@@ -183,7 +183,8 @@ export function CoefficientDoc({lotId}: {lotId: string}) {
 export function ConseilCahierDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const {president, membres} = state.committee;
+  const {president} = state.committee;
+  const membres = state.committee.membres.filter((m) => m.trim());
   return (
     <Page>
       <DocHeader />
@@ -252,7 +253,8 @@ export function ConseilCahierDoc() {
 export function ConseilAppelDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const {president, membres} = state.committee;
+  const {president} = state.committee;
+  const membres = state.committee.membres.filter((m) => m.trim());
   return (
     <Page>
       <DocHeader />
@@ -445,7 +447,8 @@ export function AnnonceFinaleDoc() {
 export function ConseilExtractDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const {president, membres} = state.committee;
+  const {president} = state.committee;
+  const membres = state.committee.membres.filter((m) => m.trim());
   return (
     <>
       <Page>

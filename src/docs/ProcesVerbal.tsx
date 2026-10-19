@@ -5,7 +5,8 @@ import {FreeAt, Page} from './primitives';
 export function ProcesVerbalDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const {president, membres} = state.committee;
+  const {president} = state.committee;
+  const membres = state.committee.membres.filter((m) => m.trim());
   const Line = ({label}: {label: string}) => (
     <li>
       السيد: {label || '..............................'}{' '}

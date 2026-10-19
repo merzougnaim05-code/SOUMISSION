@@ -113,7 +113,20 @@ export function DashboardPage() {
         </Grid>
       </Section>
 
-      <Section title="لجنة فتح الأظرفة وتقييم العروض">
+      <Section
+        title="لجنة فتح الأظرفة وتقييم العروض"
+        actions={
+          <button
+            type="button"
+            className="px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-teal-700 hover:bg-teal-800 text-white inline-flex items-center gap-1.5 transition"
+            onClick={() =>
+              setCommittee({...state.committee, membres: [...state.committee.membres, '']})
+            }
+          >
+            ➕ إضافة عضو
+          </button>
+        }
+      >
         <Grid cols={2}>
           <Field label="رئيس اللجنة">
             <input
@@ -126,17 +139,36 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           {state.committee.membres.map((mm, i) => (
             <Field key={i} label={`العضو ${i + 1}`}>
-              <input
-                className="app-input"
-                value={mm}
-                onChange={(e) => {
-                  const membres = [...state.committee.membres];
-                  membres[i] = e.target.value;
-                  setCommittee({...state.committee, membres});
-                }}
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  className="app-input flex-1"
+                  value={mm}
+                  onChange={(e) => {
+                    const membres = [...state.committee.membres];
+                    membres[i] = e.target.value;
+                    setCommittee({...state.committee, membres});
+                  }}
+                />
+                <button
+                  type="button"
+                  title="حذف العضو"
+                  className="px-2.5 py-2 text-xs font-semibold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition shrink-0"
+                  onClick={() => {
+                    if (!confirm(`حذف العضو ${i + 1}؟`)) return;
+                    setCommittee({
+                      ...state.committee,
+                      membres: state.committee.membres.filter((_, j) => j !== i),
+                    });
+                  }}
+                >
+                  ✕ حذف
+                </button>
+              </div>
             </Field>
           ))}
+          {state.committee.membres.length === 0 && (
+            <div className="text-sm text-slate-400">لا يوجد أعضاء حالياً — استعمل زر «إضافة عضو».</div>
+          )}
         </div>
       </Section>
     </div>
