@@ -39,7 +39,7 @@ const HEAT_TABS: {key: Tab; label: string}[] = [
   {key: 'docs', label: 'الوثائق للطباعة'},
 ];
 
-function CantineShell({onHome}: {onHome: () => void}) {
+function CantineShell({onHome, onGotoHeat}: {onHome: () => void; onGotoHeat: () => void}) {
   const [tab, setTab] = useState<Tab>('dash');
   const {state} = useStore();
   const s = state.settings;
@@ -79,6 +79,13 @@ function CantineShell({onHome}: {onHome: () => void}) {
             ))}
           </nav>
           <button
+            onClick={onGotoHeat}
+            className="flex items-center gap-1 bg-white/10 hover:bg-sky-500 hover:text-white text-sky-300 border border-sky-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
+            title="الانتقال إلى استشارة الأشغال (التدفئة المركزية)"
+          >
+            🔥 استشارة الأشغال
+          </button>
+          <button
             onClick={onHome}
             className="flex items-center gap-1 bg-white/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
             title="العودة إلى بوابة البرنامج"
@@ -103,7 +110,7 @@ function CantineShell({onHome}: {onHome: () => void}) {
   );
 }
 
-function HeatShell({onHome}: {onHome: () => void}) {
+function HeatShell({onHome, onGotoCantine}: {onHome: () => void; onGotoCantine: () => void}) {
   const [tab, setTab] = useState<Tab>('dash');
   const {state} = useHeat();
   const s = state.settings;
@@ -157,6 +164,13 @@ function HeatShell({onHome}: {onHome: () => void}) {
             ))}
           </nav>
           <button
+            onClick={onGotoCantine}
+            className="flex items-center gap-1 bg-white/10 hover:bg-emerald-500 hover:text-white text-emerald-300 border border-emerald-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
+            title="الانتقال إلى استشارة تموين المطعم (التغذية)"
+          >
+            🍽 استشارة التغذية
+          </button>
+          <button
             onClick={onHome}
             className="flex items-center gap-1 bg-white/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-400/40 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
             title="العودة إلى بوابة البرنامج"
@@ -183,8 +197,8 @@ function HeatShell({onHome}: {onHome: () => void}) {
 
 function Router() {
   const [mode, setMode] = useState<Mode>('home');
-  if (mode === 'cantine') return <CantineShell onHome={() => setMode('home')} />;
-  if (mode === 'chauffage') return <HeatShell onHome={() => setMode('home')} />;
+  if (mode === 'cantine') return <CantineShell onHome={() => setMode('home')} onGotoHeat={() => setMode('chauffage')} />;
+  if (mode === 'chauffage') return <HeatShell onHome={() => setMode('home')} onGotoCantine={() => setMode('cantine')} />;
   return <Home onEnter={setMode} />;
 }
 
