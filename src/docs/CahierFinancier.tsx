@@ -140,10 +140,10 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
               <thead>
                 <tr>
                   <th style={{width: '6%'}}>الرقم</th>
-                  <th style={{width: '39%'}}>تعيين المواد</th>
-                  <th style={{width: '8%'}}>الوحدة</th>
-                  <th style={{width: '15%'}}>السعر الوحدوي بكامل الرسوم (دج)</th>
-                  <th style={{width: '32%'}}>السعر الوحدوي بكامل الرسوم بالحروف</th>
+                  <th style={{width: '44%'}}>تعيين المواد</th>
+                  <th style={{width: '7%'}}>الوحدة</th>
+                  <th style={{width: '13%'}}>السعر الوحدوي بكامل الرسوم (دج)</th>
+                  <th style={{width: '30%'}}>السعر الوحدوي بكامل الرسوم بالحروف</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +152,15 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
                   return (
                     <tr key={mm.id}>
                       <td>{i + 1}</td>
-                      <td style={{textAlign: 'right', paddingTop: '3pt', paddingBottom: '3pt', lineHeight: 1.35}}>
+                      <td
+                        style={{
+                          textAlign: 'right',
+                          fontSize: '11pt',
+                          paddingTop: '3pt',
+                          paddingBottom: '3pt',
+                          lineHeight: 1.35,
+                        }}
+                      >
                         {mm.designation}
                       </td>
                       <td>{mm.unite}</td>
@@ -171,6 +179,26 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         );
       })}
 
+      {/* شريط تنقّل سريع بين حصص الكشف الكمي (لا يُطبع) */}
+      <div
+        className="no-print mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-100 p-2 text-sm"
+        style={{direction: 'rtl'}}
+      >
+        <span style={{fontWeight: 700}}>الكشف الكمي والتقديري — صفحة لكل حصة، الانتقال إلى:</span>
+        {state.lots.map((l) => (
+          <button
+            key={'nav-' + l.id}
+            type="button"
+            className="rounded border border-slate-300 bg-white px-2 py-1 hover:bg-slate-50"
+            onClick={() =>
+              document.getElementById('dcr-' + l.id)?.scrollIntoView({behavior: 'smooth', block: 'start'})
+            }
+          >
+            الحصة {String(l.numero).padStart(2, '0')}
+          </button>
+        ))}
+      </div>
+
       {/* الكشف الكمي والتقديري — صفحة مستقلة لكل حصة */}
       {state.lots.map((lot) => {
         const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
@@ -179,10 +207,10 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         const empty = lot.materiaux.every((mm) => !offer?.prix[mm.id]);
 
         return (
-          <Page key={'dcr-' + lot.id}>
+          <Page key={'dcr-' + lot.id} id={'dcr-' + lot.id}>
             <DocHeader />
             <div className="doc-title">الكشف الكمي والتقديري</div>
-            <div className="text-center mb-2" style={{fontWeight: 700}}>
+            <div className="text-center mb-2" style={{fontWeight: 700, fontSize: '12pt'}}>
               الحصة {String(lot.numero).padStart(2, '0')}: {lot.nom} للسنة المالية {s.annee}
             </div>
             <table className="table-doc" style={{fontSize: '10.5pt'}}>
@@ -191,23 +219,23 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
                   <th rowSpan={2} style={{width: '6%'}}>
                     الرقم
                   </th>
-                  <th rowSpan={2} style={{width: '33%'}}>
+                  <th rowSpan={2} style={{width: '40%'}}>
                     تعيين المواد
                   </th>
-                  <th rowSpan={2} style={{width: '7%'}}>
+                  <th rowSpan={2} style={{width: '6%'}}>
                     الوحدة
                   </th>
                   <th colSpan={2}>الكمية</th>
-                  <th rowSpan={2} style={{width: '12%'}}>
+                  <th rowSpan={2} style={{width: '11%'}}>
                     السعر الوحدوي خارج الرسوم (دج)
                   </th>
                   <th colSpan={2}>المبلغ خارج الرسوم (دج)</th>
                 </tr>
                 <tr>
-                  <th style={{width: '9%'}}>الدنيا</th>
-                  <th style={{width: '9%'}}>القصوى</th>
-                  <th style={{width: '12%'}}>الأدنى</th>
-                  <th style={{width: '12%'}}>الأقصى</th>
+                  <th style={{width: '8%'}}>الدنيا</th>
+                  <th style={{width: '8%'}}>القصوى</th>
+                  <th style={{width: '10.5%'}}>الأدنى</th>
+                  <th style={{width: '10.5%'}}>الأقصى</th>
                 </tr>
               </thead>
               <tbody>
@@ -216,7 +244,15 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
                   return (
                     <tr key={mm.id}>
                       <td>{i + 1}</td>
-                      <td style={{textAlign: 'right', paddingTop: '3pt', paddingBottom: '3pt', lineHeight: 1.35}}>
+                      <td
+                        style={{
+                          textAlign: 'right',
+                          fontSize: '11pt',
+                          paddingTop: '3pt',
+                          paddingBottom: '3pt',
+                          lineHeight: 1.35,
+                        }}
+                      >
                         {mm.designation}
                       </td>
                       <td>{mm.unite}</td>
