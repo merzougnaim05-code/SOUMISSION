@@ -16,8 +16,8 @@ export function DocHeader() {
 }
 
 /** صفحة A4 */
-export function Page({children}: {children: ReactNode}) {
-  return <div className="doc-page">{children}</div>;
+export function Page({children, id}: {children: ReactNode; id?: string}) {
+  return <div id={id} className="doc-page">{children}</div>;
 }
 
 /** سطر توقيع ختامي */

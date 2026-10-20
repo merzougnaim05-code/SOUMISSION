@@ -58,7 +58,7 @@ type DocKey =
 
 const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needsBidder?: boolean}[] = [
   {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات ملف الترشح والعرض التقني والمالي'},
-  {key: 'besoins', label: 'كشف التقديرات الإدارية للاحتياجات', desc: 'لكل حصة: الكميات والحدود والمجاميع', needsLot: true},
+  {key: 'besoins', label: 'كشف التقديرات الإدارية للاحتياجات', desc: 'كل حصة في صفحة مستقلة مع المجاميع'},
   {key: 'candidature', label: 'التصريح بالترشح', desc: 'النموذج القانوني الكامل (3 صفحات)'},
   {key: 'technique', label: 'دفتر الشروط — العرض التقني', desc: 'غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة (المواد 01 إلى 19)'},
   {key: 'financier', label: 'دفتر الشروط — العرض المالي', desc: 'غلاف + رسالة التعهد + جداول الأسعار الوحدوية + الكشف الكمي والتقديري', needsBidder: true},
@@ -185,7 +185,7 @@ export function DocumentsPage() {
       case 'annonce':
         return <AnnonceDoc />;
       case 'besoins':
-        return <BesoinsDoc lotId={lotId} />;
+        return <BesoinsDoc />;
       case 'candidature':
         return <CandidatureDoc />;
       case 'technique':
