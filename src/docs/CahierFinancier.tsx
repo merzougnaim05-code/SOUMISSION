@@ -1,4 +1,3 @@
-import {useState} from 'react';
 import {fmt, useStore} from '../store';
 import {tafqitDZD} from '../tafqit';
 import {DocHeader, Page, SignRow} from './primitives';
@@ -8,13 +7,6 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
   const {state} = useStore();
   const s = state.settings;
   const bidder = state.bidders.find((b) => b.id === bidderId);
-
-  // الكشف الكمي والتقديري: اختيار الحصة
-  const [dcrLotId, setDcrLotId] = useState(state.lots[0].id);
-  const dcrLot = state.lots.find((l) => l.id === dcrLotId) ?? state.lots[0];
-  const dcrOffer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === dcrLot.id);
-  const dcrMin = dcrLot.materiaux.reduce((a, mm) => a + (dcrOffer?.prix[mm.id] || 0) * mm.qteMin, 0);
-  const dcrMax = dcrLot.materiaux.reduce((a, mm) => a + (dcrOffer?.prix[mm.id] || 0) * mm.qteMax, 0);
 
   return (
     <>
@@ -148,10 +140,10 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
               <thead>
                 <tr>
                   <th style={{width: '6%'}}>الرقم</th>
-                  <th>تعيين المواد</th>
-                  <th style={{width: '10%'}}>الوحدة</th>
-                  <th style={{width: '16%'}}>السعر الوحدوي بكامل الرسوم (دج)</th>
-                  <th style={{width: '16%'}}>السعر الوحدوي بكامل الرسوم بالحروف</th>
+                  <th style={{width: '39%'}}>تعيين المواد</th>
+                  <th style={{width: '8%'}}>الوحدة</th>
+                  <th style={{width: '15%'}}>السعر الوحدوي بكامل الرسوم (دج)</th>
+                  <th style={{width: '32%'}}>السعر الوحدوي بكامل الرسوم بالحروف</th>
                 </tr>
               </thead>
               <tbody>
@@ -160,7 +152,9 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
                   return (
                     <tr key={mm.id}>
                       <td>{i + 1}</td>
-                      <td style={{textAlign: 'right'}}>{mm.designation}</td>
+                      <td style={{textAlign: 'right', paddingTop: '3pt', paddingBottom: '3pt', lineHeight: 1.35}}>
+                        {mm.designation}
+                      </td>
                       <td>{mm.unite}</td>
                       <td style={{fontWeight: 700}}>{p ? fmt(p) : ''}</td>
                       <td style={{fontSize: '9.5pt'}}>{p ? tafqitDZD(p) : ''}</td>
@@ -177,87 +171,88 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         );
       })}
 
-      {/* الكشف الكمي والتقديري */}
-      <Page>
-        <DocHeader />
-        <div className="doc-title">الكشف الكمي والتقديري</div>
-        <table className="table-doc mb-3 no-print">
-          <tbody>
-            <tr>
-              {state.lots.map((l) => (
-                <td
-                  key={l.id}
-                  onClick={() => setDcrLotId(l.id)}
-                  className="cursor-pointer"
-                  style={{fontWeight: l.id === dcrLotId ? 700 : 400, background: l.id === dcrLotId ? '#dde9ec' : '#fff'}}
-                >
-                  الحصة {String(l.numero).padStart(2, '0')}: {l.nom}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-        <div className="text-center mb-2" style={{fontWeight: 700}}>
-          الحصة {String(dcrLot.numero).padStart(2, '0')}: {dcrLot.nom} للسنة المالية {s.annee}
-        </div>
-        <table className="table-doc" style={{fontSize: '10.5pt'}}>
-          <thead>
-            <tr>
-              <th rowSpan={2} style={{width: '5%'}}>
-                الرقم
-              </th>
-              <th rowSpan={2}>تعيين المواد</th>
-              <th rowSpan={2} style={{width: '8%'}}>
-                الوحدة
-              </th>
-              <th colSpan={2}>الكمية</th>
-              <th rowSpan={2} style={{width: '13%'}}>
-                السعر الوحدوي خارج الرسوم (دج)
-              </th>
-              <th colSpan={2}>المبلغ خارج الرسوم (دج)</th>
-            </tr>
-            <tr>
-              <th style={{width: '10%'}}>الدنيا</th>
-              <th style={{width: '10%'}}>القصوى</th>
-              <th style={{width: '14%'}}>الأدنى</th>
-              <th style={{width: '14%'}}>الأقصى</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dcrLot.materiaux.map((mm, i) => {
-              const p = dcrOffer?.prix[mm.id] || 0;
-              return (
-                <tr key={mm.id}>
-                  <td>{i + 1}</td>
-                  <td style={{textAlign: 'right'}}>{mm.designation}</td>
-                  <td>{mm.unite}</td>
-                  <td>{fmt(mm.qteMin)}</td>
-                  <td>{fmt(mm.qteMax)}</td>
-                  <td>{p ? fmt(p) : ''}</td>
-                  <td>{p ? fmt(p * mm.qteMin) : ''}</td>
-                  <td>{p ? fmt(p * mm.qteMax) : ''}</td>
+      {/* الكشف الكمي والتقديري — صفحة مستقلة لكل حصة */}
+      {state.lots.map((lot) => {
+        const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
+        const dcrMin = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMin, 0);
+        const dcrMax = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMax, 0);
+        const empty = lot.materiaux.every((mm) => !offer?.prix[mm.id]);
+
+        return (
+          <Page key={'dcr-' + lot.id}>
+            <DocHeader />
+            <div className="doc-title">الكشف الكمي والتقديري</div>
+            <div className="text-center mb-2" style={{fontWeight: 700}}>
+              الحصة {String(lot.numero).padStart(2, '0')}: {lot.nom} للسنة المالية {s.annee}
+            </div>
+            <table className="table-doc" style={{fontSize: '10.5pt'}}>
+              <thead>
+                <tr>
+                  <th rowSpan={2} style={{width: '6%'}}>
+                    الرقم
+                  </th>
+                  <th rowSpan={2} style={{width: '33%'}}>
+                    تعيين المواد
+                  </th>
+                  <th rowSpan={2} style={{width: '7%'}}>
+                    الوحدة
+                  </th>
+                  <th colSpan={2}>الكمية</th>
+                  <th rowSpan={2} style={{width: '12%'}}>
+                    السعر الوحدوي خارج الرسوم (دج)
+                  </th>
+                  <th colSpan={2}>المبلغ خارج الرسوم (دج)</th>
                 </tr>
-              );
-            })}
-            <tr style={{fontWeight: 700, background: '#eef2f4'}}>
-              <td colSpan={7}>المجموع</td>
-              <td>{fmt(dcrMin)}</td>
-              <td>{fmt(dcrMax)}</td>
-            </tr>
-            <tr>
-              <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
-                المبلغ الإجمالي الأدنى بالحروف: {dcrMin > 0 ? tafqitDZD(dcrMin) : ''}
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
-                المبلغ الإجمالي الأقصى بالحروف: {dcrMax > 0 ? tafqitDZD(dcrMax) : ''}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <SignRow right="المتعامل المتعاقد — الختم والإمضاء" />
-      </Page>
+                <tr>
+                  <th style={{width: '9%'}}>الدنيا</th>
+                  <th style={{width: '9%'}}>القصوى</th>
+                  <th style={{width: '12%'}}>الأدنى</th>
+                  <th style={{width: '12%'}}>الأقصى</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lot.materiaux.map((mm, i) => {
+                  const p = offer?.prix[mm.id] || 0;
+                  return (
+                    <tr key={mm.id}>
+                      <td>{i + 1}</td>
+                      <td style={{textAlign: 'right', paddingTop: '3pt', paddingBottom: '3pt', lineHeight: 1.35}}>
+                        {mm.designation}
+                      </td>
+                      <td>{mm.unite}</td>
+                      <td>{fmt(mm.qteMin)}</td>
+                      <td>{fmt(mm.qteMax)}</td>
+                      <td>{p ? fmt(p) : ''}</td>
+                      <td>{p ? fmt(p * mm.qteMin) : ''}</td>
+                      <td>{p ? fmt(p * mm.qteMax) : ''}</td>
+                    </tr>
+                  );
+                })}
+                <tr style={{fontWeight: 700, background: '#eef2f4'}}>
+                  <td colSpan={6}>المجموع</td>
+                  <td>{empty ? '' : fmt(dcrMin)}</td>
+                  <td>{empty ? '' : fmt(dcrMax)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
+                    المبلغ الإجمالي الأدنى بالحروف: {dcrMin > 0 ? tafqitDZD(dcrMin) : ''}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
+                    المبلغ الإجمالي الأقصى بالحروف: {dcrMax > 0 ? tafqitDZD(dcrMax) : ''}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="mt-4 text-sm">
+              حرر بـ: <b>{s.commune}</b> في: .............................. / .............................. /{' '}
+              {s.annee}
+            </div>
+            <SignRow right="المتعامل المتعاقد — الختم والإمضاء" />
+          </Page>
+        );
+      })}
     </>
   );
 }
