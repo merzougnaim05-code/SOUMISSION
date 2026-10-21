@@ -2,6 +2,11 @@ import {useHeat} from '../../heatStore';
 import {HeatHeader, HPage} from './primitives';
 
 /** إعلان عن استشارة أشغال التدفئة المركزية */
+function d(iso: string, dots = '..............................'): string {
+  if (!iso) return dots;
+  const m = iso.split('-');
+  return m.length === 3 ? `${m[2]}/${m[1]}/${m[0]}` : iso;
+}
 export function HeatAnnonce() {
   const {state} = useHeat();
   const s = state.settings;
@@ -125,7 +130,7 @@ export function HeatAnnonce() {
       </table>
 
       <p className="mt-4" style={{textAlign: 'justify', fontSize: '12.5pt'}}>
-        يتم إيداع العروض يوم: .............................. إيداعاً مباشراً لدى أمانة الثانوية بالتاريخ المذكور
+        يتم إيداع العروض يوم: <b style={{whiteSpace: 'nowrap'}}>{d(s.dateDepot)}</b> إيداعاً مباشراً لدى أمانة الثانوية بالتاريخ المذكور
         قبل الساعة {s.heureDepot} صباحاً، ويتم فتح الأظرفة في جلسة علنية ابتداءً من الساعة {s.heureOuverture}{' '}
         صباحاً من نفس اليوم، والمتعهدون مدعوون لحضور جلسة الفتح، يبقى المتعهدون ملتزمين بعروضهم مدة{' '}
         {s.delaiValidite} يوماً ابتداءً من آخر يوم من مدة تحضير العروض.
@@ -134,8 +139,8 @@ export function HeatAnnonce() {
         <b>ملاحظة:</b> تستظهر جميع الوثائق الأصلية في حالة الحصول على المشروع إجبارياً.
       </p>
 
-      <div className="mt-6 text-sm">
-        {s.commune} في: ..............................
+      <div className="mt-6 text-sm" style={{textAlign: 'right'}}>
+        <span style={{fontWeight: 700}}>{s.commune}</span> في: <b style={{whiteSpace: 'nowrap'}}>{d(s.dateAnnonce)}</b>
       </div>
       <div className="text-center mt-8" style={{fontWeight: 700}}>
         مدير الثانوية

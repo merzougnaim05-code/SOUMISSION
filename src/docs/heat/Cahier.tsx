@@ -1,6 +1,8 @@
+import {Fragment} from 'react';
 import {useHeat} from '../../heatStore';
 import {HeatHeader, HPage, HSign} from './primitives';
-import {withDots, docParagraphAlign} from '../primitives';
+import {CorpsLines, splitCorps} from './corps';
+import type {HeatArticle} from '../../types';
 
 type CahierSection = 'inst' | 'ccap' | 'cpc';
 
@@ -41,64 +43,69 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
       </HPage>
 
       {sections.map((sec) => {
-        const list = arts.filter((a) => a.section === sec);
+        // في دفتر الشروط الكامل: حذف المواد الفارغة (بدون محتوى)
+        const full = !only;
+        const list = arts.filter((a) => a.section === sec && (!full || (a.corps ?? '').trim() !== ''));
         if (list.length === 0) return null;
+        const hasChunks = (a: HeatArticle) => splitCorps(a.corps ?? '').length > 1;
         return (
-          <HPage key={sec}>
-            <div className="doc-title" style={{fontSize: '15pt'}}>
-              {SECTION_TITLES[sec]}
-            </div>
-            {sec === 'inst' && (
-              <p style={{textAlign: 'justify', fontSize: '12pt'}}>
-                لمشروع: {s.projet} — {s.institutionShort}
-              </p>
-            )}
-            {list.map((a) => (
-              <div key={a.id} className="doc-art">
-                <div style={{fontWeight: 700}}>{a.titre}</div>
-                {(a.corps ?? '')
-                  .split(/\n+/)
-                  .map((p) => p.trim())
-                  .filter((p) => p.length > 0)
-                  .map((p, i) => (
-                    <p
-                      key={i}
-                      style={{
-                        whiteSpace: 'pre-line',
-                        textAlign: docParagraphAlign(p),
-                        fontSize: '11.5pt',
-                        lineHeight: 1.55,
-                      }}
-                    >
-                      {withDots(p)}
-                    </p>
-                  ))}
+          <Fragment key={sec}>
+            <HPage>
+              <div className="doc-title" style={{fontSize: '15pt'}}>
+                {SECTION_TITLES[sec]}
               </div>
-            ))}
-            {sec === 'inst' && (
-              <>
-                <div className="mt-8 text-center" style={{fontWeight: 700, fontSize: '14pt'}}>
-                  (قُرِئ وقُبِل) مكتوبة بخط اليد
-                </div>
-                <div className="text-sm mt-2">
-                  حرر بـ .................. في .....................
-                </div>
-                <HSign right="المتعهد" />
-              </>
+              {sec === 'inst' && (
+                <p style={{textAlign: 'justify', fontSize: '12pt'}}>
+                  لمشروع: {s.projet} — {s.institutionShort}
+                </p>
+              )}
+              {list.map((a) => {
+                if (hasChunks(a)) return null;
+                return (
+                  <div key={a.id} id={a.id} className="doc-art">
+                    <div style={{fontWeight: 700}}>{a.titre}</div>
+                    <CorpsLines text={a.corps ?? ''} s={s} />
+                  </div>
+                );
+              })}
+              {sec === 'inst' && (
+                <>
+                  <div className="mt-8 text-center" style={{fontWeight: 700, fontSize: '14pt'}}>
+                    (قُرِئ وقُبِل) مكتوبة بخط اليد
+                  </div>
+                  <div className="text-sm mt-2">
+                    حرر بـ .................. في .....................
+                  </div>
+                  <HSign right="المتعهد" />
+                </>
+              )}
+              {standalone(sec) && (sec === 'ccap' || sec === 'cpc') && (
+                <>
+                  <div className="text-sm mt-10">
+                    حرر بـ .................. في .....................
+                  </div>
+                  {sec === 'ccap' ? (
+                    <HSign right="صاحب المشروع" left="المقاولة المتعاملة" />
+                  ) : (
+                    <HSign right="صاحب المشروع" />
+                  )}
+                </>
+              )}
+            </HPage>
+            {/* صفحات مقطوعة: بداية المواد + غلاف الجمهورية — صفحات مستقلة */}
+            {list.map((a) =>
+              hasChunks(a)
+                ? splitCorps(a.corps ?? '').map((c, ci) => (
+                    <HPage key={`${a.id}#${ci}`} id={`c-${sec}-${ci}`}>
+                      <div className="doc-art">
+                        {ci === 0 && <div style={{fontWeight: 700}}>{a.titre}</div>}
+                        <CorpsLines text={c} s={s} />
+                      </div>
+                    </HPage>
+                  ))
+                : null,
             )}
-            {standalone(sec) && (sec === 'ccap' || sec === 'cpc') && (
-              <>
-                <div className="text-sm mt-10">
-                  حرر بـ .................. في .....................
-                </div>
-                {sec === 'ccap' ? (
-                  <HSign right="صاحب المشروع" left="المقاولة المتعاملة" />
-                ) : (
-                  <HSign right="صاحب المشروع" />
-                )}
-              </>
-            )}
-          </HPage>
+          </Fragment>
         );
       })}
     </>

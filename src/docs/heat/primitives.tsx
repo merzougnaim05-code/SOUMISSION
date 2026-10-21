@@ -15,8 +15,8 @@ export function HeatHeader() {
   );
 }
 
-export function HPage({children}: {children: ReactNode}) {
-  return <div className="doc-page">{children}</div>;
+export function HPage({id, children}: {id?: string; children: ReactNode}) {
+  return <div className="doc-page" id={id}>{children}</div>;
 }
 
 export function HSign({right, left}: {right: string; left?: string}) {
