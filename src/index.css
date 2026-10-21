@@ -106,6 +106,11 @@ input[type='time'] {
   background: #e8eef0;
   font-weight: 700;
 }
+.doc-page .table-doc.tight th,
+.doc-page .table-doc.tight td {
+  padding: 0.8pt 3pt;
+  line-height: 1.25;
+}
 .doc-fill {
   display: inline-block;
   border-bottom: 1px dotted #333;
