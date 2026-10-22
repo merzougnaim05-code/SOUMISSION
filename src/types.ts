@@ -105,6 +105,7 @@ export interface HeatSettings {
   activite: string;
   dateAnnonce: string;
   dateDepot: string;
+  dateContrat: string; // تاريخ إمضاء العقد / رسالة التعهد
   heureDepot: string;
   heureOuverture: string;
   delaiPreparation: number; // أيام

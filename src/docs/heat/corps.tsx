@@ -45,6 +45,20 @@ export function fillHeat(t: string, s: HeatSettings): string {
   if (s.dateAnnonce) {
     x = x.replace(new RegExp(`ابتداء من\\s*:\\s*${D}`, 'g'), `ابتداء من: ${fmtDate(s.dateAnnonce)}`);
   }
+  // «حرر بـ ..... في .....» (توقيع رسالة التعهد/العقد): المكان = المؤسسة (أو البلدية)، والتاريخ من مدخل تاريخ العقد
+  const place = inst || comm;
+  const dContrat = s.dateContrat?.trim();
+  if (place || dContrat) {
+    x = x
+      .split('\n')
+      .map((ln) => {
+        if (!/حرر\s*ب/.test(ln)) return ln;
+        if (place) ln = ln.replace(/حرر\s*ب(?:ـ+)?\s*:?\s*[.\u2026]{4,}/, `حرر ب ${place} `);
+        if (dContrat) ln = ln.replace(/في\s*:?\s*[.\u2026]{4,}/, `في: ${fmtDate(dContrat)}`);
+        return ln;
+      })
+      .join('\n');
+  }
   // إعادة «ثانوية ............ سابقا» كما هي
   x = x.replace(new RegExp(SABA, 'g'), 'ثانوية .............. سابقا');
   return x;

@@ -63,6 +63,9 @@ export function HeatDashboard() {
           <Field label="تاريخ إيداع العروض">
             <input type="date" className="app-input" value={s.dateDepot} onChange={(e) => setSettings({dateDepot: e.target.value})} />
           </Field>
+          <Field label="تاريخ إمضاء العقد">
+            <input type="date" className="app-input" value={s.dateContrat ?? ''} onChange={(e) => setSettings({dateContrat: e.target.value})} />
+          </Field>
           <Field label="ساعة الإيداع">
             <input type="time" className="app-input" value={s.heureDepot} onChange={(e) => setSettings({heureDepot: e.target.value})} />
           </Field>

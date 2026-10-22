@@ -59,6 +59,7 @@ export function defaultHeatState(): HeatState {
       activite: 'رئيسي أو ثانوي',
       dateAnnonce: '',
       dateDepot: '',
+      dateContrat: '',
       heureDepot: '10:00',
       heureOuverture: '10:30',
       delaiPreparation: 8,
