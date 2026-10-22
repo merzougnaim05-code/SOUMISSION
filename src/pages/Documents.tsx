@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useLayoutEffect, useRef, useState} from 'react';
 import {rankLot, useStore} from '../store';
 import {Btn} from '../ui';
 import {usePrint, PrintSettingsPanel, printWithAutoFix} from '../printSettings';
@@ -173,6 +173,50 @@ export function DocumentsPage() {
   };
 
   const meta = DOCS.find((d) => d.key === docKey)!;
+
+  /** ترقيم كل صفحات الوثيقة المعروضة: «X / N» أسفل الصفحة — يبني صفحات التدفق الديناميكية (FlowSlot)
+   *  وتُعاد التسمية آلياً كلما تغيّرت الصفحات عبر مراقب DOM */ 
+  useLayoutEffect(() => {
+    const root = printRef.current;
+    if (!root) return;
+    let tid = 0;
+    /** الترقيم متزامن (بدون rAF): يمرّ فور بناء صفحات التدفق، ولا يعتمد على ظهور التاب */
+    const renumber = () => {
+      clearTimeout(tid);
+      root.querySelectorAll('.pg-num').forEach((n) => n.remove());
+      const all = Array.from(root.querySelectorAll('.doc-page'));
+      const total = all.length;
+      all.forEach((pg, ix) => {
+        const num = document.createElement('div');
+        num.className = 'pg-num';
+        num.style.cssText =
+          'position:absolute;bottom:4mm;left:0;right:0;text-align:center;font-size:10.5pt;line-height:1.2;color:#222;direction:ltr;';
+        num.textContent = `${ix + 1} / ${total}`;
+        pg.appendChild(num);
+      });
+    };
+    const observer = new MutationObserver((muts) => {
+      // تجاهل التغييرات التي سببها الترقيم نفسه (إضافة/حذف .pg-num)
+      const relevant = muts.some((m) =>
+        [...m.addedNodes, ...m.removedNodes].some(
+          (n) => n instanceof Element && !n.classList.contains('pg-num'),
+        ),
+      );
+      if (relevant) {
+        clearTimeout(tid);
+        // microtask قصيرة: كي تكتمل كتلة التعديلات الحالية قبل إعادة الترقيم
+        tid = window.setTimeout(renumber, 0) as unknown as number;
+      }
+    });
+    observer.observe(root, {childList: true, subtree: true});
+    renumber();
+    return () => {
+      observer.disconnect();
+      clearTimeout(tid);
+      root.querySelectorAll('.pg-num').forEach((n) => n.remove());
+    };
+  }, [docKey]);
+
   const winnerOfLot = (l: string) => {
     const lot = state.lots.find((x) => x.id === l);
     if (!lot) return '';

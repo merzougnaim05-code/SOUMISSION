@@ -28,7 +28,7 @@ function domToWordHtml(el: Element, inherited: {align?: string; bold?: boolean} 
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     const ch = node as HTMLElement;
-    if (ch.classList.contains('no-print')) return;
+    if (ch.classList.contains('no-print') || ch.classList.contains('pg-num')) return;
 
     const tag = ch.tagName.toLowerCase();
     const css = ch.getAttribute('style') ?? '';

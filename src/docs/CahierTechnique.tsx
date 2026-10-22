@@ -1,6 +1,7 @@
 import {useStore} from '../store';
 import {type ArticleItem} from '../types';
 import {Article, DocHeader, Page} from './primitives';
+import {FlowSlot, type FlowUnit} from './flow';
 
 const SECTION_ORDER: ArticleItem['section'][] = ['أ', 'ب', 'ج', 'د', 'هـ', 'و'];
 const SECTION_TITLES: Record<string, string> = {
@@ -12,16 +13,66 @@ const SECTION_TITLES: Record<string, string> = {
   و: 'و. منح الاتفاقية',
 };
 
-function ArticleItemView({a}: {a: ArticleItem}) {
-  return <Article titre={a.titre} corps={a.corps.split(/\n{2,}/)} />;
-}
-
 /** دفتر الشروط — العرض التقني: غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة */
 export function CahierTechniqueDoc() {
   const {state} = useStore();
   const s = state.settings;
   const articles = state.articles ?? [];
   const bySection = (sec: ArticleItem['section']) => articles.filter((a) => a.section === sec);
+
+  // التعليمات العامة: تُوزَّع على صفحات A4 بالقياس الحقيقي (كل مادة/عنوان قسم = وحدة تدفق)
+  // عنوان القسم يُدمَج مع أول مادة بعده كي لا يقف يتماً في آخر صفحة
+  const units: FlowUnit[] = [];
+  units.push({
+    key: 'sec-main',
+    node: (
+      <div>
+        <div className="doc-title">التعليمات العامة للمتعهدین (العرض التقني)</div>
+      </div>
+    ),
+  });
+  SECTION_ORDER.forEach((sec) => {
+    const arts = bySection(sec);
+    if (arts.length === 0) return;
+    const [a0, ...rest] = arts;
+    units.push({
+      key: `sec-${sec}-first-${a0.id}`,
+      node: (
+        <div>
+          <div className="doc-title" style={{marginTop: '14pt', fontSize: '15pt'}}>
+            {SECTION_TITLES[sec]}
+          </div>
+          <Article titre={a0.titre} corps={a0.corps.split(/\n{2,}/)} />
+        </div>
+      ),
+    });
+    rest.forEach((a) =>
+      units.push({
+        key: a.id,
+        node: <Article titre={a.titre} corps={a.corps.split(/\n{2,}/)} />,
+      }),
+    );
+  });
+  // كتلة التوثيق الختامية — دائماً في صفحة مستقلة
+  if (units.length > 0)
+    units.push({
+      key: 'sign-end',
+      node: (
+        <div>
+          <div className="mt-8 text-center" style={{fontWeight: 700, fontSize: '14pt'}}>
+            قُرِئ وقُبِل
+          </div>
+          <div className="text-sm mt-2">
+            حرر بـ: .............................. في: ..............................
+          </div>
+          <div className="text-center mt-6" style={{fontWeight: 700}}>
+            المتعهـــــد
+          </div>
+          <div className="text-center text-xs">(إسم وصفة الموقع وختم المتعهد)</div>
+        </div>
+      ),
+      brkAfter: true,
+    });
 
   return (
     <>
@@ -157,34 +208,8 @@ export function CahierTechniqueDoc() {
         </div>
       </Page>
 
-      {/* التعليمات العامة للمتعهدین — المواد القابلة للتعديل */}
-      <Page>
-        <div className="doc-title">التعليمات العامة للمتعهدین (العرض التقني)</div>
-        <div style={{fontSize: '12.5pt'}}>
-          {SECTION_ORDER.map((sec) => {
-            const arts = bySection(sec);
-            if (arts.length === 0) return null;
-            return (
-              <div key={sec}>
-                <div style={{fontWeight: 700}}>{SECTION_TITLES[sec]}</div>
-                {arts.map((a) => (
-                  <ArticleItemView key={a.id} a={a} />
-                ))}
-              </div>
-            );
-          })}
-          <div className="mt-8 text-center" style={{fontWeight: 700, fontSize: '14pt'}}>
-            قُرِئ وقُبِل
-          </div>
-          <div className="text-sm mt-2">
-            حرر بـ: .............................. في: ..............................
-          </div>
-          <div className="text-center mt-6" style={{fontWeight: 700}}>
-            المتعهـــــد
-          </div>
-          <div className="text-center text-xs">(إسم وصفة الموقع وختم المتعهد)</div>
-        </div>
-      </Page>
+      {/* التعليمات العامة للمتعهدین — المواد القابلة للتعديل: صفحات مبنية بالقياس الحقيقي */}
+      <FlowSlot key={JSON.stringify([s, articles])} units={units} />
     </>
   );
 }
