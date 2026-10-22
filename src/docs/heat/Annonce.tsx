@@ -1,5 +1,5 @@
 import {useHeat} from '../../heatStore';
-import {HeatHeader, HPage} from './primitives';
+import {RepublicEmblem, HPage} from './primitives';
 
 /** إعلان عن استشارة أشغال التدفئة المركزية */
 function d(iso: string, dots = '..............................'): string {
@@ -11,18 +11,27 @@ export function HeatAnnonce() {
   const {state} = useHeat();
   const s = state.settings;
   return (
-    <HPage>
-      <HeatHeader />
-      <div className="doc-title" style={{marginTop: '10pt'}}>
+    <HPage style={{padding: '9mm 15mm', lineHeight: 1.3}}>
+      <div style={{textAlign: 'center', lineHeight: 1.25, marginBottom: '6pt'}}>
+        <RepublicEmblem size="10mm" />
+        <div style={{fontWeight: 700}}>الجمهورية الجزائرية الديمقراطية الشعبية</div>
+        <div>وزارة التربية الوطنية</div>
+        <div>مديرية التربية لولاية {s.wilaya}</div>
+        <div style={{fontWeight: 700}}>{s.institutionShort}</div>
+      </div>
+      <div
+        className="text-center"
+        style={{fontSize: '14pt', fontWeight: 700, textDecoration: 'underline', margin: '2pt 0 6pt'}}
+      >
         إعلان عن استشارة
       </div>
 
-      <p style={{textAlign: 'justify', fontSize: '12.5pt'}}>
+      <p style={{textAlign: 'justify', fontSize: '11pt'}}>
         طبقاً للمادة 18 من القانون رقم: 23-12 المؤرخ في 05/08/2023 يحدد القواعد العامة للصفقات العمومية
         وبالإشارة إلى المواد 13 و14 من المرسوم الرئاسي رقم: 15-247 المؤرخ في 16/09/2015 المتضمن تنظيم الصفقات
         العمومية وتفويضات المرفق العام.
       </p>
-      <p style={{textAlign: 'justify', fontSize: '12.5pt'}}>
+      <p style={{textAlign: 'justify', fontSize: '11pt'}}>
         يعلن مدير {s.institutionShort} عن استشارة للمشروع التالي:
       </p>
 
@@ -64,7 +73,7 @@ export function HeatAnnonce() {
         <tbody>
           <tr>
             <td style={{width: '14%', fontWeight: 700}}>ملاحظة</td>
-            <td style={{textAlign: 'right', fontSize: '11.5pt'}}>
+            <td style={{textAlign: 'right', fontSize: '10pt'}}>
               يتم سحب ملف الاستشارة (دفتر الشروط) من طرف المرشح شخصياً أو من طرف ممثله المعين بوكالة (موثق) +
               ختم المؤسسة إجباري، على المقاولات المهتمة والمؤهلة في الميدان. يُسحب ملف الاستشارة من مقر الثانوية
               (مكتب أمانة المؤسسة).
@@ -73,7 +82,7 @@ export function HeatAnnonce() {
         </tbody>
       </table>
 
-      <p className="mt-3" style={{textAlign: 'justify', fontSize: '12.5pt'}}>
+      <p className="mt-2" style={{textAlign: 'justify', fontSize: '11pt'}}>
         تحدد فترة سحب ملف الاستشارة لمدة {s.delaiPreparation === 8 ? 'ثمانية (08)' : `(${s.delaiPreparation})`} أيام
         ابتداءً من تاريخ صدور هذا الإعلان محلياً وفي بلديتين على الأقل، وتودع العروض إلى السيد مدير{' '}
         {s.institutionShort}، ويجب أن تشتمل العروض على ملف ترشح وعرض تقني وعرض مالي توضع في أظرفة منفصلة ومقفلة
@@ -83,7 +92,7 @@ export function HeatAnnonce() {
         التالي:
       </p>
 
-      <table className="table-doc mt-3" style={{fontSize: '10.5pt'}}>
+      <table className="table-doc mt-2" style={{fontSize: '9pt'}}>
         <thead>
           <tr>
             <th style={{width: '33%'}}>01- ملف الترشح</th>
@@ -129,20 +138,20 @@ export function HeatAnnonce() {
         </tbody>
       </table>
 
-      <p className="mt-4" style={{textAlign: 'justify', fontSize: '12.5pt'}}>
+      <p className="mt-2" style={{textAlign: 'justify', fontSize: '11pt'}}>
         يتم إيداع العروض يوم: <b style={{whiteSpace: 'nowrap'}}>{d(s.dateDepot)}</b> إيداعاً مباشراً لدى أمانة الثانوية بالتاريخ المذكور
         قبل الساعة {s.heureDepot} صباحاً، ويتم فتح الأظرفة في جلسة علنية ابتداءً من الساعة {s.heureOuverture}{' '}
         صباحاً من نفس اليوم، والمتعهدون مدعوون لحضور جلسة الفتح، يبقى المتعهدون ملتزمين بعروضهم مدة{' '}
         {s.delaiValidite} يوماً ابتداءً من آخر يوم من مدة تحضير العروض.
       </p>
-      <p style={{fontSize: '12pt'}}>
+      <p style={{fontSize: '10.5pt'}}>
         <b>ملاحظة:</b> تستظهر جميع الوثائق الأصلية في حالة الحصول على المشروع إجبارياً.
       </p>
 
-      <div className="mt-6 text-sm" style={{textAlign: 'right'}}>
+      <div className="mt-2 text-sm" style={{textAlign: 'right'}}>
         <span style={{fontWeight: 700}}>{s.commune}</span> في: <b style={{whiteSpace: 'nowrap'}}>{d(s.dateAnnonce)}</b>
       </div>
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
+      <div className="text-center mt-4" style={{fontWeight: 700}}>
         مدير الثانوية
       </div>
     </HPage>

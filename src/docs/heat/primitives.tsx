@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import type {ReactNode, CSSProperties} from 'react';
 import {withDots, docParagraphAlign} from '../primitives';
 import {useHeat} from '../../heatStore';
 
@@ -48,8 +48,12 @@ export function RepublicEmblem({size = '14mm'}: {size?: string}) {
   );
 }
 
-export function HPage({id, children}: {id?: string; children: ReactNode}) {
-  return <div className="doc-page" id={id}>{children}</div>;
+export function HPage({id, style, children}: {id?: string; style?: CSSProperties; children: ReactNode}) {
+  return (
+    <div className="doc-page" id={id} style={style}>
+      {children}
+    </div>
+  );
 }
 
 export function HSign({right, left}: {right: string; left?: string}) {
