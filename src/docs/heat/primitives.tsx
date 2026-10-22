@@ -7,7 +7,6 @@ export function HeatHeader() {
   const s = state.settings;
   return (
     <div className="text-center mb-4 leading-snug">
-      <RepublicEmblem size="14mm" />
       <div style={{fontWeight: 700}}>الجمهورية الجزائرية الديمقراطية الشعبية</div>
       <div>وزارة التربية الوطنية</div>
       <div>مديرية التربية لولاية {s.wilaya}</div>

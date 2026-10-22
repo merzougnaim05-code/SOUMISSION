@@ -2,7 +2,6 @@ import type {CSSProperties, ReactNode} from 'react';
 import {Fragment} from 'react';
 import type {HeatSettings} from '../../types';
 import {docParagraphAlign, withDots} from '../primitives';
-import {RepublicEmblem} from './primitives';
 
 /** إزالة التطويل وتوحيد الألف للمقارنة بين الأسطر */
 export function normLine(s: string): string {
@@ -47,17 +46,19 @@ export function fillHeat(t: string, s: HeatSettings): string {
   if (s.dateAnnonce) {
     x = x.replace(new RegExp(`ابتداء من\\s*:\\s*${D}`, 'g'), `ابتداء من: ${fmtDate(s.dateAnnonce)}`);
   }
-  // «حرر بـ ..... في .....» (توقيع رسالة التعهد/العقد): المكان = المؤسسة (أو البلدية)، والتاريخ من مدخل تاريخ العقد
-  const place = inst || comm;
+  // «تاريخ إمضاء العقد: .....» — من حقل تاريخ إمضاء العقد
   const dContrat = s.dateContrat?.trim();
-  if (place || dContrat) {
+  if (dContrat) {
+    x = x.replace(/تاريخ إمضاء العقد\s*:?\s*[.\u2026]{4,}/g, `تاريخ إمضاء العقد: ${fmtDate(dContrat)}`);
+  }
+  // «حرر بـ ..... في .....» (توقيع رسالة التعهد/العقد): يبقى المكان منقّطاً (كتابة يدوية)
+  // والتاريخ يُلأى من حقل تاريخ العقد
+  if (dContrat) {
     x = x
       .split('\n')
       .map((ln) => {
         if (!/حرر\s*ب/.test(ln)) return ln;
-        if (place) ln = ln.replace(/حرر\s*ب(?:ـ+)?\s*:?\s*[.\u2026]{4,}/, `حرر ب ${place} `);
-        if (dContrat) ln = ln.replace(/في\s*:?\s*[.\u2026]{4,}/, `في: ${fmtDate(dContrat)}`);
-        return ln;
+        return ln.replace(/في\s*:?\s*[.\u2026]{4,}/, `في: ${fmtDate(dContrat)}`);
       })
       .join('\n');
   }
@@ -141,9 +142,36 @@ function DotsRow({raw}: {raw: string}) {
   );
 }
 
-/** أسطر عنوان الوثيقة داخل غلاف الجمهورية — تحتها يُرسم الشعار */
-function isTitleLine(n: string): boolean {
-  return /^(دفتر الشروط|رسالة التعهد|عنوان العملية|العرض المالي)/.test(n);
+/** هل يحوي السطر سلسلة نقاط ناقصة (يمكن تمديدها حتى نهاية السطر)؟ */
+function hasDotRun(raw: string): boolean {
+  return /[.\u2026]{4,}/.test(raw ?? '') && (raw ?? '').replace(/[.\u2026]+/g, '').trim().length > 0;
+}
+
+/** سطر نص + نقاط ناقصة: النقاط تتمدد كخط منقّط حتى نهاية السطر (منطقة كتابة يدوية)
+ *  (لا يُطبَّق إلا على الأسطر القصيرة حتى يبقى النص في سطر واحد) */
+function MixedDots({raw}: {raw: string}) {
+  const parts = (raw ?? '').split(/([.\u2026]{4,})/g);
+  const items: ReactNode[] = [];
+  parts.forEach((p, ix) => {
+    if (!p) return;
+    if (/^[.\u2026]{4,}$/.test(p)) {
+      items.push(
+        <span
+          key={ix}
+          style={{
+            flex: '1 1 14pt',
+            minWidth: '14pt',
+            borderBottom: '2px dotted #333',
+            height: '0.9em',
+            margin: '0 2pt',
+          }}
+        />,
+      );
+    } else {
+      items.push(<span key={ix}>{p}</span>);
+    }
+  });
+  return <span style={{display: 'flex', alignItems: 'flex-end'}}>{items}</span>;
 }
 
 /** عرض سطور جسد مادة: ملء المدخلات + العناوين بالخط العريض */
@@ -152,6 +180,8 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
     .split('\n')
     .map((x) => x.trim())
     .filter(Boolean);
+  // أسطر قصيرة تحوي نقاطاً ناقصة: تتمدد النقاط حتى نهاية السطر/الصفحة
+  const stretch = (r: string) => hasDotRun(r) && r.replace(/[.\u2026]+/g, '').trim().length <= 90;
   const out: ReactNode[] = [];
   let i = 0;
   let k = 0;
@@ -166,25 +196,21 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
       continue;
     }
 
-    // غلاف «الجمهورية الجزائرية ...» — وسط الصفحة مع الشعار
+    // غلاف «الجمهورية الجزائرية ...» — وسط الصفحة
     if (n.startsWith('الجمهورية')) {
-      const g: Array<{txt: string; emblem: boolean}> = [];
-      let emblemDone = false;
+      const g: string[] = [];
       while (i < lines.length) {
         const gn = normLine(lines[i]);
         if (g.length > 0 && !isCoverLine(gn)) break;
-        const emblem = !emblemDone && g.length > 0 && isTitleLine(gn);
-        if (emblem) emblemDone = true;
-        g.push({txt: lines[i], emblem});
+        g.push(lines[i]);
         i += 1;
       }
       out.push(
         <div key={k++} style={{textAlign: 'center'}}>
-          {g.map((gi2, gi) => (
-            <Fragment key={gi}>
-              {gi2.emblem && <RepublicEmblem size="18mm" />}
-              <p style={coverStyle(normLine(gi2.txt))}>{withDots(gi2.txt)}</p>
-            </Fragment>
+          {g.map((gl, gi) => (
+            <p key={gi} style={coverStyle(normLine(gl))}>
+              {hasDotRun(gl) ? <MixedDots raw={gl} /> : withDots(gl)}
+            </p>
           ))}
         </div>,
       );
@@ -265,7 +291,7 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
       continue;
     }
 
-    // «حرر ب ... في ...» وتوقيعات إمضاء: في منتصف الصفحة
+    // «حرر ب ... في ...» وتوقيعات إمضاء: في منتصف الصفحة (النقاط تتمدد لعرض الصفحة)
     if (n.startsWith('حرر ب') || n.startsWith('إمضاء')) {
       out.push(
         <p
@@ -278,7 +304,7 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
             fontWeight: 600,
           }}
         >
-          {withDots(raw)}
+          {stretch(raw) ? <MixedDots raw={raw} /> : withDots(raw)}
         </p>,
       );
       i += 1;
@@ -314,7 +340,7 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
           lineHeight: 1.55,
         }}
       >
-        {withDots(raw)}
+        {stretch(raw) ? <MixedDots raw={raw} /> : withDots(raw)}
       </p>,
     );
     i += 1;
