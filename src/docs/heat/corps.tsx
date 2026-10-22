@@ -1,6 +1,8 @@
 import type {CSSProperties, ReactNode} from 'react';
+import {Fragment} from 'react';
 import type {HeatSettings} from '../../types';
 import {docParagraphAlign, withDots} from '../primitives';
+import {RepublicEmblem} from './primitives';
 
 /** إزالة التطويل وتوحيد الألف للمقارنة بين الأسطر */
 export function normLine(s: string): string {
@@ -64,7 +66,8 @@ export function fillHeat(t: string, s: HeatSettings): string {
   return x;
 }
 
-/** خط التدفق: أسطر البادئات المطلوب رؤوس أقسام (الفصول) وغلاف «الجمهورية» */
+/** خط التدفق: أسطر البادئات المطلوب رؤوس أقسام (الفصول) وغلاف «الجمهورية»
+ *  وكذلك نهاية كتلة التوقيع «(قرئ وقبل) ... حرر ب ... المتعهد» — ما يليها في صفحة موالية */
 export function splitCorps(corps: string): string[] {
   if (!corps) return [];
   const lines = corps
@@ -81,6 +84,10 @@ export function splitCorps(corps: string): string[] {
     } else if (n.startsWith('الجمهورية')) {
       j += 1;
       if (j <= 2) points.add(i);
+    } else if (n === 'المتعهد' || n === 'المتهعد' || n === 'المتعههد') {
+      // نهاية كتلة التوقيع — أي كتابة بعدها تنتقل إلى الصفحة الموالية
+      const prev = lines.slice(Math.max(0, i - 6), i).map(normLine).join(' ');
+      if (prev.includes('قرئ وقب') && i + 1 < lines.length) points.add(i + 1);
     }
   });
   if (!points.size) return [];
@@ -102,7 +109,7 @@ function isCoverLine(n: string): boolean {
 }
 
 function coverStyle(n: string): CSSProperties {
-  const base: CSSProperties = {textAlign: 'center'};
+  const base: CSSProperties = {textAlign: 'center', textAlignLast: 'center'};
   if (n === 'رسالة التعهد') return {...base, fontSize: '20pt', fontWeight: 700, marginTop: '30pt'};
   if (/^دفتر الشروط/.test(n)) return {...base, fontSize: '24pt', fontWeight: 700, marginTop: '30pt'};
   if (n === 'العرض المالي') return {...base, fontSize: '16pt', fontWeight: 700, marginTop: '18pt'};
@@ -110,6 +117,33 @@ function coverStyle(n: string): CSSProperties {
   if (/^(مديرية التربية|ثانوية)/.test(n)) return {...base, fontWeight: 600};
   if (n.startsWith('عنوان العملية')) return {...base, fontWeight: 700, marginTop: '14pt'};
   return {...base, marginTop: '4pt'};
+}
+
+/** سطر منقّط فقط (كتابة يدوية): تمديد النقاط على كامل عرض الصفحة
+ *  (يمكن للسطر أن يحوي موضعاً منقّطاً أو اثنين — تُوزَّع سواتها على كامل العرض) */
+function DotsRow({raw}: {raw: string}) {
+  const runs = raw.split(/\s+/).filter((x) => /^[.\u2026]{3,}$/.test(x));
+  if (runs.length === 0) return null;
+  return (
+    <div style={{display: 'flex', gap: runs.length > 1 ? '5%' : 0, margin: '2pt 0'}}>
+      {runs.map((_, ix) => (
+        <div
+          key={ix}
+          style={{
+            width: runs.length > 1 ? '47.5%' : '100%',
+            borderBottom: '2px dotted #333',
+            height: '1em',
+            flexShrink: 0,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** أسطر عنوان الوثيقة داخل غلاف الجمهورية — تحتها يُرسم الشعار */
+function isTitleLine(n: string): boolean {
+  return /^(دفتر الشروط|رسالة التعهد|عنوان العملية|العرض المالي)/.test(n);
 }
 
 /** عرض سطور جسد مادة: ملء المدخلات + العناوين بالخط العريض */
@@ -125,21 +159,32 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
     const raw = lines[i];
     const n = normLine(raw);
 
-    // غلاف «الجمهورية الجزائرية ...» — وسط الصفحة
+    // سطر منقّط فقط — تمديده على كامل عرض الصفحة
+    if (/^[.\u2026\s]*$/.test(n) && (n.match(/[.\u2026]/g) ?? []).length >= 4) {
+      out.push(<DotsRow key={k++} raw={raw} />);
+      i += 1;
+      continue;
+    }
+
+    // غلاف «الجمهورية الجزائرية ...» — وسط الصفحة مع الشعار
     if (n.startsWith('الجمهورية')) {
-      const group: string[] = [];
+      const g: Array<{txt: string; emblem: boolean}> = [];
+      let emblemDone = false;
       while (i < lines.length) {
         const gn = normLine(lines[i]);
-        if (group.length > 0 && !isCoverLine(gn)) break;
-        group.push(lines[i]);
+        if (g.length > 0 && !isCoverLine(gn)) break;
+        const emblem = !emblemDone && g.length > 0 && isTitleLine(gn);
+        if (emblem) emblemDone = true;
+        g.push({txt: lines[i], emblem});
         i += 1;
       }
       out.push(
         <div key={k++} style={{textAlign: 'center'}}>
-          {group.map((g, gi) => (
-            <p key={gi} style={coverStyle(normLine(g))}>
-              {withDots(g)}
-            </p>
+          {g.map((gi2, gi) => (
+            <Fragment key={gi}>
+              {gi2.emblem && <RepublicEmblem size="18mm" />}
+              <p style={coverStyle(normLine(gi2.txt))}>{withDots(gi2.txt)}</p>
+            </Fragment>
           ))}
         </div>,
       );
@@ -161,7 +206,16 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
     // «الفصل الأول/الثاني: ...» — عنوان فصل مركز
     if (n.startsWith('الفصل') && /(الاول|الثاني)/.test(n)) {
       out.push(
-        <p key={k++} style={{fontWeight: 700, textAlign: 'center', fontSize: '12.5pt', marginTop: '10pt'}}>
+        <p
+          key={k++}
+          style={{
+            fontWeight: 700,
+            textAlign: 'center',
+            textAlignLast: 'center',
+            fontSize: '12.5pt',
+            marginTop: '10pt',
+          }}
+        >
           {withDots(raw)}
         </p>,
       );
@@ -171,7 +225,16 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
 
     if (n === 'دفتر البنود الإدارية العامة') {
       out.push(
-        <p key={k++} style={{fontWeight: 700, textAlign: 'center', fontSize: '13.5pt', marginBottom: '6pt'}}>
+        <p
+          key={k++}
+          style={{
+            fontWeight: 700,
+            textAlign: 'center',
+            textAlignLast: 'center',
+            fontSize: '13.5pt',
+            marginBottom: '6pt',
+          }}
+        >
           {withDots(raw)}
         </p>,
       );
@@ -191,7 +254,30 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
 
     if (n.startsWith('قرئ وقب') || n.startsWith('قرئ وقبـ')) {
       out.push(
-        <p key={k++} style={{fontWeight: 600, textAlign: 'center', marginTop: '10pt'}}>
+        <p
+          key={k++}
+          style={{fontWeight: 600, textAlign: 'center', textAlignLast: 'center', marginTop: '10pt'}}
+        >
+          {withDots(raw)}
+        </p>,
+      );
+      i += 1;
+      continue;
+    }
+
+    // «حرر ب ... في ...» وتوقيعات إمضاء: في منتصف الصفحة
+    if (n.startsWith('حرر ب') || n.startsWith('إمضاء')) {
+      out.push(
+        <p
+          key={k++}
+          style={{
+            textAlign: 'center',
+            textAlignLast: 'center',
+            marginTop: '8pt',
+            whiteSpace: 'pre-line',
+            fontWeight: 600,
+          }}
+        >
           {withDots(raw)}
         </p>,
       );
@@ -201,7 +287,16 @@ export function CorpsLines({text, s}: {text: string; s: HeatSettings}) {
 
     if (n === 'المتعهد' || n === 'المتعههد' || n === 'المتهعد') {
       out.push(
-        <p key={k++} style={{fontWeight: 700, marginTop: '8pt'}}>
+        <p
+          key={k++}
+          style={{
+            fontWeight: 700,
+            textAlign: 'center',
+            textAlignLast: 'center',
+            fontSize: '13pt',
+            marginTop: '12pt',
+          }}
+        >
           {withDots(raw)}
         </p>,
       );

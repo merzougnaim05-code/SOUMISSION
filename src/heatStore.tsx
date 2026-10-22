@@ -29,7 +29,9 @@ function load(): HeatState {
         // نسترجع النصوص الافتراضية بدل ترك العقد ودفتر الشروط فارغين
         const articles =
           parsed.articles && parsed.articles.length > 0 ? parsed.articles : defaultHeatArticles();
-        return {...defaultHeatState(), ...parsed, articles};
+        const base = defaultHeatState();
+        // دمج عميق للإعدادات: الحقول المضافة حديثاً (ك dateContrat) تُستكمن من القيم الافتراضية
+        return {...base, ...parsed, settings: {...base.settings, ...parsed.settings}, articles};
       }
     }
   } catch {
