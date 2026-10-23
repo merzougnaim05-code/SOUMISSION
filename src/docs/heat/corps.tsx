@@ -85,7 +85,7 @@ export function splitCorps(corps: string): string[] {
     } else if (n.startsWith('الجمهورية')) {
       j += 1;
       if (j <= 2) points.add(i);
-    } else if (n === 'المتعهد' || n === 'المتهعد' || n === 'المتعههد') {
+    } else if (n === 'المتعهد' || n === 'المتهعد' || n === 'المتعههد' || n === 'المعهد' || n === 'المعههد') {
       // نهاية كتلة التوقيع — أي كتابة بعدها تنتقل إلى الصفحة الموالية
       const prev = lines.slice(Math.max(0, i - 6), i).map(normLine).join(' ');
       if (prev.includes('قرئ وقب') && i + 1 < lines.length) points.add(i + 1);

@@ -15,8 +15,9 @@ const SECTION_TITLES: Record<string, string> = {
   cpc: 'ثالثاً: دفتر التعليمات الخاصة',
 };
 
-/** نهاية كتلة توقيع: «(قرئ وقبل) ... حرر ب ... المتعهد» */
-const SIGN_END = /^(المتعهد|المتعههد|المتهعد|إمضاء ممثل المصلحة المتعاقدة)/;
+/** نهاية كتلة توقيع: «(قرئ وقبل) ... حرر ب ... المتعهد/المعهد/إمضاء ممثل المصلحة المتعاقدة» */
+const SIGN_END =
+  /^(المتعهد|المتعههد|المتهعد|المعهد|المعههد|إمضاء ممثل المصلحة المتعاقدة|إمضاء ممثل المعهد)/;
 
 /** آخر سطر جسد المادة (أو آخر مقطع منها) — للكشف عن نهايات كتل التوقيع */
 function corpsTail(a: HeatArticle): string {
@@ -119,27 +120,44 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
         ),
     );
     // صفحات المواد المقطوعة (كما في السابق: بعد كل المواد التدفقية)
+    // المقطع الذي يبدأ بغلاف «الجمهورية...» أو بداية «الفصل الأول» يفتح صفحة موالية —
+    // نغلق صفحة الوحدة السابقة إذن
+    const firstLine = (t: string) =>
+      (t
+        .split('\n')
+        .map((x) => x.trim())
+        .find(Boolean) ?? '')
+        .replace(/[\u064B-\u0652\u0640]/g, '');
+    const OPENS_PAGE =
+      /^الجمهوري|^الفصل|^رسالة التعهد|^رسالـة التعهد|^(دفتر الشروط|عنوان العملية|أشغال التدفئة|اشغال التدفئة)/;
     list
       .filter((a) => hasChunks(a))
-      .forEach((a) =>
-        splitCorps(a.corps ?? '').forEach((c, ci) =>
+      .forEach((a) => {
+        const cs = splitCorps(a.corps ?? '');
+        cs.forEach((c, ci) => {
+          if (ci > 0 && OPENS_PAGE.test(firstLine(c))) {
+            const prev = units[units.length - 1];
+            if (prev) prev.brkAfter = true;
+          }
           units.push({
             key: `${a.id}#${ci}`,
-            brkAfter: SIGN_END.test(corpsTail(a)) && ci === splitCorps(a.corps ?? '').length - 1,
+            brkAfter: SIGN_END.test(corpsTail(a)) && ci === cs.length - 1,
             node: (
               <div id={`c-${sec}-${ci}`} className="doc-art">
                 {ci === 0 && <div style={{fontWeight: 700}}>{renum(a.titre, numbers.get(a.id))}</div>}
                 <CorpsLines text={c} s={s} />
               </div>
             ),
-          }),
-        ),
-      );
-    // كتلة التوثيق الختامية: قرئ وقبل / حرر ب / المتعهد
+          });
+        });
+      });
+    // كتلة التوثيق الختامية: قرئ وقبل / حرر ب / المتعهد — تُغلق صفحتها دائماً
+    // وما بعدها (عنوان القسم الموالي / غلاف الجمهورية) يبدأ في صفحة موالية
     const hasSign = sec === 'inst' || (standalone(sec) && (sec === 'ccap' || sec === 'cpc'));
     if (hasSign) {
       units.push({
         key: `sign-${sec}`,
+        brkAfter: true,
         node: (
           <div id={`sec-${sec}-sign`}>
             {sec === 'inst' && (
@@ -161,24 +179,6 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
     }
   });
 
-  /** ترقيم كل صفحات الدفتر: «X / N» أسفل الصفحة — يُعاد بعد كل إعادة بناء */
-  const rootRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    root.querySelectorAll('.pg-num').forEach((n) => n.remove());
-    const all = Array.from(root.querySelectorAll('.doc-page'));
-    const total = all.length;
-    all.forEach((pg, ix) => {
-      const num = document.createElement('div');
-      num.className = 'pg-num';
-      num.style.cssText =
-        'position:absolute;bottom:4mm;left:0;right:0;text-align:center;font-size:10.5pt;line-height:1.2;color:#222;direction:ltr;';
-      num.textContent = `${ix + 1} / ${total}`;
-      pg.appendChild(num);
-    });
-  });
-
   /** مفتاح إعادة القياس: الإعدادات/المواد/الخط — لتفادي إعادة البناء مع كل تفاعل واجهة */
   const depKey = JSON.stringify([
     s,
@@ -188,6 +188,45 @@ export function HeatCahier({only, coverTitle}: {only?: CahierSection[]; coverTit
     printSettings,
     units.map((u) => u.key),
   ]);
+
+  /** ترقيم كل صفحات الدفتر: «X / N» أسفل الصفحة — مراقب DOM يلتقط إعادة بناء FlowSlot
+   *  لصفحات التدفق فوراً (الترقيم المتزامن عبر setTimeout — rAF لا يعمل في معاينة OpenCode) */
+  const rootRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    let tid = 0;
+    const renumber = () => {
+      clearTimeout(tid);
+      tid = window.setTimeout(() => {
+        root.querySelectorAll('.pg-num').forEach((n) => n.remove());
+        const all = Array.from(root.querySelectorAll('.doc-page'));
+        const total = all.length;
+        all.forEach((pg, ix) => {
+          const num = document.createElement('div');
+          num.className = 'pg-num';
+          num.style.cssText =
+            'position:absolute;bottom:4mm;left:0;right:0;text-align:center;font-size:10.5pt;line-height:1.2;color:#222;direction:ltr;';
+          num.textContent = `${ix + 1} / ${total}`;
+          pg.appendChild(num);
+        });
+      }, 0) as unknown as number;
+    };
+    const observer = new MutationObserver((muts) => {
+      const relevant = muts.some((m) =>
+        [...m.addedNodes, ...m.removedNodes].some(
+          (n) => n instanceof Element && !n.classList.contains('pg-num'),
+        ),
+      );
+      if (relevant) renumber();
+    });
+    observer.observe(root, {childList: true, subtree: true});
+    renumber();
+    return () => {
+      observer.disconnect();
+      clearTimeout(tid);
+    };
+  }, []);
 
   return (
     <div ref={rootRef} style={{position: 'relative'}} className="heat-cahier-root">
