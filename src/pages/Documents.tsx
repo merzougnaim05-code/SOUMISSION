@@ -39,6 +39,7 @@ type DocKey =
   | 'trach'
   | 'technique'
   | 'financier'
+  | 'cahiers'
   | 'comite'
   | 'pv'
   | 'comparaison'
@@ -65,6 +66,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'trach', label: 'دفتر الشروط — الجزء 1: ملف الترشح', desc: 'غلاف + لائحة محتويات ملف الترشح + التصريح بالترشح + التصريح بالنزاهة'},
   {key: 'technique', label: 'دفتر الشروط — الجزء 2: الملف التقني', desc: 'غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة (المواد 01 إلى 19)'},
   {key: 'financier', label: 'دفتر الشروط — الجزء 3: الملف المالي', desc: 'غلاف + رسالة التعهد + كشف الأسعار + الكشف الكمي والتقديري بثلاث نسب ضريبة (0% / 9% / 19%)', needsBidder: true},
+  {key: 'cahiers', label: '🖨 الأجزاء الثلاثة معاً — طباعة كاملة', desc: 'ملف الترشح + الملف التقني + الملف المالي في جلسة واحدة، بترقيم مستقل لكل دفتر', needsBidder: true},
   {key: 'invitation', label: 'دعوة مجلس التربية والتسيير', desc: 'دعوة أعضاء المجلس لانعقاد الجلسة'},
   {key: 'comite', label: 'مقرر تعيين لجنة فتح الأظرفة وتقييم العروض', desc: 'مقرر المدير بتشكيل اللجنة'},
   {key: 'pv', label: 'محضر جلسة فتح الأظرفة', desc: 'محضر اجتماع اللجنة مع عدد العروض لكل حصة'},
@@ -84,6 +86,68 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'etapes', label: 'خطوات تنفيذ الاستشارة', desc: 'جدول خطوات الإجراءات الإدارية'},
   {key: 'dossier', label: 'ملف الترشح — الغلاف', desc: 'غلاف دفتر الشروط وصفحة وصف الاستشارة'},
 ];
+
+/** قائم الحقول الناقصة قبل الطباعة — فحص المعطيات العامة + بيانات الوثيقة المعروضة */
+function missingData(
+  state: ReturnType<typeof useStore>['state'],
+  docKey: DocKey,
+  bidderId: string,
+): string[] {
+  const s = state.settings;
+  const meta = DOCS.find((d) => d.key === docKey)!;
+  const out: string[] = [];
+  const add = (label: string, cond: boolean) => {
+    if (cond) out.push(label);
+  };
+
+  // معطيات المؤسسة والمواعيد (مشتركة بين الأغلفة والوثائق)
+  add('اسم المؤسسة فارغ — من تبويب «المدخل»', !s.institution);
+  add('اسم ولقب مدير المؤسسة فارغ', !s.directeur);
+  add('الولاية أو البلدية فارغة', !s.wilaya || !s.commune);
+  add('تاريخ الإعلان عن الاستشارة فارغ', !s.dateAnnonce);
+  add('آخر أجل لإيداع العروض فارغ', !s.dateDepot);
+  add('تاريخ فتح الأظرفة فارغ', !s.dateOuverture);
+
+  // اللجنة
+  add(
+    'تشكيلة لجنة فتح الأظرفة غير مكتملة (رئيس أو أعضاء)',
+    !state.committee.president || state.committee.membres.some((m) => !m?.trim()),
+  );
+
+  // الحصص والمواد
+  const noMat = state.lots.find((l) => l.materiaux.length === 0);
+  add(
+    noMat ? `الحصة ${noMat.numero} (${noMat.nom}) بدون مواد` : '',
+    !!noMat,
+  );
+  const badMat = state.lots.find((l) =>
+    l.materiaux.some((mm) => !mm.designation?.trim() || mm.qteMin <= 0 || mm.qteMax <= 0),
+  );
+  if (badMat) {
+    out.push(`الحصة ${badMat.numero}: مواد بلا تسمية أو بكمية صفرية`);
+  }
+
+  // المتعهدين والعروض
+  add('لا يوجد متعهدين — أدخلهم من تبويب «المتعهدون»', state.bidders.length === 0);
+
+  const bidder = state.bidders.find((b) => b.id === bidderId);
+  if (meta.needsBidder) {
+    for (const lot of state.lots) {
+      const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
+      const miss = lot.materiaux.filter((mm) => !offer?.prix[mm.id]).length;
+      if (miss > 0) {
+        out.push(`العارض ${bidder?.nom || '(غير محدد)'} — الحصة ${lot.numero}: ينقص ${miss} سعراً وحدوياً`);
+      }
+    }
+  }
+
+  // فترة العقد (تظهر في الملفات وعقد التموين)
+  if (docKey === 'contrat' || docKey === 'cahiers') {
+    add('فترة العقد (من / إلى) غير محددة', !s.contractFrom || !s.contractTo);
+  }
+
+  return out.filter(Boolean);
+}
 
 export function DocumentsPage() {
   const {state, setSettings, setLots, setBidders, setOffers} = useStore();
@@ -176,6 +240,7 @@ export function DocumentsPage() {
   };
 
   const meta = DOCS.find((d) => d.key === docKey)!;
+  const missing = missingData(state, docKey, bidderId);
 
   /** ترقيم كل صفحات الوثيقة المعروضة: «X / N» أسفل الصفحة — يبني صفحات التدفق الديناميكية (FlowSlot)
    *  وتُعاد التسمية آلياً كلما تغيّرت الصفحات عبر مراقب DOM */ 
@@ -187,16 +252,20 @@ export function DocumentsPage() {
     const renumber = () => {
       clearTimeout(tid);
       root.querySelectorAll('.pg-num').forEach((n) => n.remove());
-      const all = Array.from(root.querySelectorAll('.doc-page'));
-      const total = all.length;
-      all.forEach((pg, ix) => {
-        const num = document.createElement('div');
-        num.className = 'pg-num';
-        num.style.cssText =
-          'position:absolute;bottom:4mm;left:0;right:0;text-align:center;font-size:10.5pt;line-height:1.2;color:#222;direction:ltr;';
-        num.textContent = `${ix + 1} / ${total}`;
-        pg.appendChild(num);
-      });
+      // دفتر واحد = ترقيم شامل؛ عند طباعة الأجزاء الثلاثة معاً (pg-chunk) ترقيم مستقل لكل دفتر
+      const chunks = Array.from(root.querySelectorAll('.pg-chunk'));
+      const groups: Element[] = chunks.length > 0 ? chunks : [root];
+      for (const grp of groups) {
+        const pages = Array.from(grp.querySelectorAll('.doc-page'));
+        pages.forEach((pg, ix) => {
+          const num = document.createElement('div');
+          num.className = 'pg-num';
+          num.style.cssText =
+            'position:absolute;bottom:4mm;left:0;right:0;text-align:center;font-size:10.5pt;line-height:1.2;color:#222;direction:ltr;';
+          num.textContent = `${ix + 1} / ${pages.length}`;
+          pg.appendChild(num);
+        });
+      }
     };
     const observer = new MutationObserver((muts) => {
       // تجاهل التغييرات التي سببها الترقيم نفسه (إضافة/حذف .pg-num)
@@ -241,6 +310,14 @@ export function DocumentsPage() {
         return <CahierTechniqueDoc />;
       case 'financier':
         return <CahierFinancierDoc bidderId={bidderId} />;
+      case 'cahiers':
+        return (
+          <>
+            <div className="pg-chunk"><CahierTrachDoc /></div>
+            <div className="pg-chunk"><CahierTechniqueDoc /></div>
+            <div className="pg-chunk"><CahierFinancierDoc bidderId={bidderId} /></div>
+          </>
+        );
       case 'invitation':
         return <InvitationDoc />;
       case 'comite':
@@ -346,6 +423,21 @@ export function DocumentsPage() {
             </select>
           )}
         </div>
+        {missing.length > 0 ? (
+          <div className="no-print mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm" style={{direction: 'rtl'}}>
+            <b className="text-amber-800">⚠ معطيات ناقصة قبل الطباعة ({missing.length}):</b>
+            <ul className="mt-1 list-disc pr-5 text-amber-900 space-y-0.5">
+              {missing.slice(0, 9).map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+            {missing.length > 9 && <div className="mt-1 text-amber-700">…و{missing.length - 9} أخرى</div>}
+          </div>
+        ) : (
+          <div className="no-print mb-3 rounded-lg border border-teal-200 bg-teal-50 p-2.5 text-sm text-teal-800">
+            ✓ المعطيات مكتملة — الوثيقة جاهزة للطباعة
+          </div>
+        )}
         <PrintSettingsPanel />
         <div
           ref={printRef}
@@ -376,6 +468,7 @@ function fileName(
     trach: 'دفتر الشروط - ملف الترشح',
     technique: 'دفتر الشروط - الملف التقني',
     financier: `الملف المالي - ${bidder?.nom ?? ''}`,
+    cahiers: 'دفاتر الشروط الثلاثة',
     invitation: 'دعوة مجلس التربية والتسيير',
     comite: 'مقرر تعيين لجنة فتح الأظرفة',
     pv: 'محضر جلسة فتح الأظرفة',

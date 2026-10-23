@@ -72,8 +72,7 @@ input[type='time'] {
   unicode-bidi: embed;
   text-align: var(--doc-align);
   overflow-wrap: break-word;
-  word-break: normal;
-  hyphens: none;
+  word-break: normal;  hyphens: none;
   -webkit-hyphens: none;
   font-kerning: normal;
   font-feature-settings: "liga" 1, "calt" 1, "rlig" 1;
@@ -85,6 +84,11 @@ input[type='time'] {
 }
 .doc-page:last-child {
   page-break-after: auto;
+}
+/* عند طباعة الأجزاء الثلاثة معاً (pg-chunk): يبدأ كل دفتر بصفحة جديدة */
+.pg-chunk:not(:first-child) > .doc-page:first-child {
+  page-break-before: always;
+  break-before: page;
 }
 .doc-page .table-doc {
   width: 100%;
