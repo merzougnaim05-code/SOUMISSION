@@ -28,7 +28,13 @@ function load(): AppState {
         // نفس الحماية لجهة المطعم: قائمة مواد فارغة = استعادة الافتراضي
         const articles =
           parsed.articles && parsed.articles.length > 0 ? parsed.articles : defaultArticles();
-        return {...defaultState(), ...parsed, articles};
+        return {
+          ...defaultState(),
+          ...parsed,
+          // دمج حقل بـ حقل حتى لا تفقد الإصدارات القديمة الحقول الجديدة
+          settings: {...defaultState().settings, ...parsed.settings},
+          articles,
+        };
       }
     }
   } catch {

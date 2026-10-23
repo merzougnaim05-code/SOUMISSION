@@ -50,6 +50,8 @@ export interface Settings {
   dateOuverture: string;
   heureOuverture: string;
   delaiJours: number;
+  /** عدد أيام تنفيذ المشروع (مدة المشروع) */
+  dureeJours: number;
   contractFrom: string;
   contractTo: string;
   banque: string;

@@ -109,6 +109,7 @@ export function defaultState(): AppState {
       dateOuverture: '',
       heureOuverture: '11:00',
       delaiJours: 10,
+      dureeJours: 365,
       contractFrom: '',
       contractTo: '',
       banque: '',

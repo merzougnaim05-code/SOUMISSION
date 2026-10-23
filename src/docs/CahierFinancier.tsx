@@ -2,7 +2,10 @@ import {fmt, useStore} from '../store';
 import {tafqitDZD} from '../tafqit';
 import {DocHeader, Page, SignRow} from './primitives';
 
-/** دفتر الشروط — العرض المالي: غلاف + رسالة التعهد + جداول الأسعار الوحدوية + الكشف الكمي والتقديري */
+/** النسب الثلاث للضريبة على القيمة المضافة: جدول مستقل لكل نسبة */
+const TVA_RATES = [0, 9, 19] as const;
+
+/** دفتر الشروط — الملف المالي: غلاف + رسالة التعهد + جداول الأسعار الوحدوية + الكشف الكمي والتقديري (3 نسب ضريبة) */
 export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
   const {state} = useStore();
   const s = state.settings;
@@ -17,7 +20,10 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
           دفتــر الشــروط
         </div>
         <div className="text-center" style={{marginTop: '18pt', fontWeight: 700, fontSize: '18pt'}}>
-          العرض المالي
+          الملف المالي (العرض المالي)
+        </div>
+        <div className="text-center mt-3" style={{fontSize: '12pt', fontWeight: 700}}>
+          الجزء الثالث من ثلاثة
         </div>
         <div className="text-center mt-10" style={{fontSize: '14pt'}}>
           البرنامج: ميزانية المؤسسة لسنة {s.annee}
@@ -184,14 +190,16 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         className="no-print mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-100 p-2 text-sm"
         style={{direction: 'rtl'}}
       >
-        <span style={{fontWeight: 700}}>الكشف الكمي والتقديري — صفحة لكل حصة، الانتقال إلى:</span>
+        <span style={{fontWeight: 700}}>الكشف الكمي والتقديري — 3 جداول (0% / 9% / 19%) لكل حصة، الانتقال إلى:</span>
         {state.lots.map((l) => (
           <button
             key={'nav-' + l.id}
             type="button"
             className="rounded border border-slate-300 bg-white px-2 py-1 hover:bg-slate-50"
             onClick={() =>
-              document.getElementById('dcr-' + l.id)?.scrollIntoView({behavior: 'smooth', block: 'start'})
+              document
+                .getElementById('dcr-' + l.id + '-0')
+                ?.scrollIntoView({behavior: 'smooth', block: 'start'})
             }
           >
             الحصة {String(l.numero).padStart(2, '0')}
@@ -199,95 +207,131 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         ))}
       </div>
 
-      {/* الكشف الكمي والتقديري — صفحة مستقلة لكل حصة */}
+      {/* الكشف الكمي والتقديري — جدول مستقل لكل نسبة ضريبة (0% / 9% / 19%) في كل حصة */}
       {state.lots.map((lot) => {
         const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
-        const dcrMin = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMin, 0);
-        const dcrMax = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMax, 0);
+        const dcrMinHT = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMin, 0);
+        const dcrMaxHT = lot.materiaux.reduce((a, mm) => a + (offer?.prix[mm.id] || 0) * mm.qteMax, 0);
         const empty = lot.materiaux.every((mm) => !offer?.prix[mm.id]);
 
-        return (
-          <Page key={'dcr-' + lot.id} id={'dcr-' + lot.id}>
-            <DocHeader />
-            <div className="doc-title">الكشف الكمي والتقديري</div>
-            <div className="text-center mb-2" style={{fontWeight: 700, fontSize: '12pt'}}>
-              الحصة {String(lot.numero).padStart(2, '0')}: {lot.nom} للسنة المالية {s.annee}
-            </div>
-            <table className="table-doc" style={{fontSize: '10.5pt'}}>
-              <thead>
-                <tr>
-                  <th rowSpan={2} style={{width: '6%'}}>
-                    الرقم
-                  </th>
-                  <th rowSpan={2} style={{width: '40%'}}>
-                    تعيين المواد
-                  </th>
-                  <th rowSpan={2} style={{width: '6%'}}>
-                    الوحدة
-                  </th>
-                  <th colSpan={2}>الكمية</th>
-                  <th rowSpan={2} style={{width: '11%'}}>
-                    السعر الوحدوي خارج الرسوم (دج)
-                  </th>
-                  <th colSpan={2}>المبلغ خارج الرسوم (دج)</th>
-                </tr>
-                <tr>
-                  <th style={{width: '8%'}}>الدنيا</th>
-                  <th style={{width: '8%'}}>القصوى</th>
-                  <th style={{width: '10.5%'}}>الأدنى</th>
-                  <th style={{width: '10.5%'}}>الأقصى</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lot.materiaux.map((mm, i) => {
-                  const p = offer?.prix[mm.id] || 0;
-                  return (
-                    <tr key={mm.id}>
-                      <td>{i + 1}</td>
-                      <td
-                        style={{
-                          textAlign: 'right',
-                          fontSize: '11pt',
-                          paddingTop: '3pt',
-                          paddingBottom: '3pt',
-                          lineHeight: 1.35,
-                        }}
-                      >
-                        {mm.designation}
-                      </td>
-                      <td>{mm.unite}</td>
-                      <td>{fmt(mm.qteMin)}</td>
-                      <td>{fmt(mm.qteMax)}</td>
-                      <td>{p ? fmt(p) : ''}</td>
-                      <td>{p ? fmt(p * mm.qteMin) : ''}</td>
-                      <td>{p ? fmt(p * mm.qteMax) : ''}</td>
+        return TVA_RATES.map((rate) => {
+          const t = rate / 100;
+          const minTTC = dcrMinHT * (1 + t);
+          const maxTTC = dcrMaxHT * (1 + t);
+          const rateLabel = rate === 0 ? '0% (خارج الرسوم)' : `${rate}%`;
+          return (
+            <Page key={`dcr-${lot.id}-${rate}`} id={`dcr-${lot.id}-${rate}`}>
+              <DocHeader />
+              <div className="doc-title">الكشف الكمي والتقديري</div>
+              <div className="text-center mb-1" style={{fontWeight: 700, fontSize: '12pt'}}>
+                الحصة {String(lot.numero).padStart(2, '0')}: {lot.nom} للسنة المالية {s.annee}
+              </div>
+              <div className="text-center mb-2" style={{fontWeight: 700, fontSize: '11.5pt'}}>
+                على أساس الضريبة على القيمة المضافة: {rateLabel}
+              </div>
+              <table className="table-doc" style={{fontSize: '10pt'}}>
+                <thead>
+                  <tr>
+                    <th rowSpan={2} style={{width: '5%'}}>
+                      الرقم
+                    </th>
+                    <th rowSpan={2} style={{width: '30%'}}>
+                      تعيين المواد
+                    </th>
+                    <th rowSpan={2} style={{width: '6%'}}>
+                      الوحدة
+                    </th>
+                    <th colSpan={2}>الكمية</th>
+                    <th rowSpan={2} style={{width: '10%'}}>
+                      السعر الوحدوي خارج الرسوم (دج)
+                    </th>
+                    <th colSpan={2}>المبلغ خارج الرسوم (دج)</th>
+                    <th colSpan={2}>الضريبة {rate}% (دج)</th>
+                    <th colSpan={2}>المبلغ بكامل الرسوم (دج)</th>
+                  </tr>
+                  <tr>
+                    <th style={{width: '6%'}}>الدنيا</th>
+                    <th style={{width: '6%'}}>القصوى</th>
+                    <th style={{width: '8%'}}>الأدنى</th>
+                    <th style={{width: '8%'}}>الأقصى</th>
+                    <th style={{width: '6.5%'}}>الأدنى</th>
+                    <th style={{width: '6.5%'}}>الأقصى</th>
+                    <th style={{width: '8%'}}>الأدنى</th>
+                    <th style={{width: '8%'}}>الأقصى</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lot.materiaux.map((mm, i) => {
+                    const p = offer?.prix[mm.id] || 0;
+                    const minHT = p * mm.qteMin;
+                    const maxHT = p * mm.qteMax;
+                    return (
+                      <tr key={mm.id}>
+                        <td>{i + 1}</td>
+                        <td
+                          style={{
+                            textAlign: 'right',
+                            fontSize: '10.5pt',
+                            paddingTop: '3pt',
+                            paddingBottom: '3pt',
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {mm.designation}
+                        </td>
+                        <td style={{fontSize: '9.5pt'}}>{mm.unite}</td>
+                        <td style={{fontSize: '9.5pt'}}>{fmt(mm.qteMin)}</td>
+                        <td style={{fontSize: '9.5pt'}}>{fmt(mm.qteMax)}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(p) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(minHT) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(maxHT) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(minHT * t) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(maxHT * t) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(minTTC) : ''}</td>
+                        <td style={{fontSize: '9.5pt'}}>{p ? fmt(maxTTC) : ''}</td>
+                      </tr>
+                    );
+                  })}
+                  <tr style={{fontWeight: 700, background: '#eef2f4'}}>
+                    <td colSpan={6}>المجموع خارج الرسوم</td>
+                    <td>{empty ? '' : fmt(dcrMinHT)}</td>
+                    <td>{empty ? '' : fmt(dcrMaxHT)}</td>
+                    <td colSpan={4}></td>
+                  </tr>
+                  {rate > 0 && (
+                    <tr style={{fontWeight: 700, background: '#f6f8fa'}}>
+                      <td colSpan={8}>مجموع الضريبة {rate}%</td>
+                      <td>{empty ? '' : fmt(dcrMinHT * t)}</td>
+                      <td>{empty ? '' : fmt(dcrMaxHT * t)}</td>
+                      <td colSpan={2}></td>
                     </tr>
-                  );
-                })}
-                <tr style={{fontWeight: 700, background: '#eef2f4'}}>
-                  <td colSpan={6}>المجموع</td>
-                  <td>{empty ? '' : fmt(dcrMin)}</td>
-                  <td>{empty ? '' : fmt(dcrMax)}</td>
-                </tr>
-                <tr>
-                  <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
-                    المبلغ الإجمالي الأدنى بالحروف: {dcrMin > 0 ? tafqitDZD(dcrMin) : ''}
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={8} style={{textAlign: 'right', fontSize: '10.5pt'}}>
-                    المبلغ الإجمالي الأقصى بالحروف: {dcrMax > 0 ? tafqitDZD(dcrMax) : ''}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="mt-4 text-sm">
-              حرر بـ: <b>{s.commune}</b> في: .............................. / .............................. /{' '}
-              {s.annee}
-            </div>
-            <SignRow right="المتعامل المتعاقد — الختم والإمضاء" />
-          </Page>
-        );
+                  )}
+                  <tr style={{fontWeight: 700, background: '#eef2f4'}}>
+                    <td colSpan={8}>المجموع بكامل الرسوم</td>
+                    <td>{empty ? '' : fmt(minTTC)}</td>
+                    <td>{empty ? '' : fmt(maxTTC)}</td>
+                    <td colSpan={2}></td>
+                  </tr>
+                  <tr>
+                    <td colSpan={12} style={{textAlign: 'right', fontSize: '10pt'}}>
+                      المبلغ الإجمالي الأدنى بكامل الرسوم بالحروف: {minTTC > 0 ? tafqitDZD(minTTC) : ''}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={12} style={{textAlign: 'right', fontSize: '10pt'}}>
+                      المبلغ الإجمالي الأقصى بكامل الرسوم بالحروف: {maxTTC > 0 ? tafqitDZD(maxTTC) : ''}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="mt-3 text-sm">
+                حرر بـ: <b>{s.commune}</b> في: .............................. / .............................. /{' '}
+                {s.annee}
+              </div>
+              <SignRow right="المتعامل المتعاقد — الختم والإمضاء" />
+            </Page>
+          );
+        });
       })}
     </>
   );

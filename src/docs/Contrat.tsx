@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react';
 import {fmt, offerTotals, useStore} from '../store';
-import {tafqitDZD} from '../tafqit';
+import {intToArabicWords, tafqitDZD} from '../tafqit';
 import {DocHeader, Page, SignRow} from './primitives';
 
 /** عقد تموين بين المؤسسة والمتعهد الفائز */
@@ -77,6 +77,10 @@ export function ContratDoc({bidderId, lotId}: {bidderId: string; lotId: string})
           <p style={{textAlign: 'justify'}}>
             تهدف هذه الاتفاقية إلى تموين مطعم <b>{s.institution}</b> بـ: <b>{lot.nom}</b> (الحصة{' '}
             {String(lot.numero).padStart(2, '0')}).
+          </p>
+          <p style={{textAlign: 'justify'}}>
+            تعد هذه الاتفاقية لمدة <b>{s.dureeJours} يوماً ({intToArabicWords(s.dureeJours)} يوماً)</b>{' '}
+            {s.contractFrom && s.contractTo ? `ممتدة من ${new Date(s.contractFrom).toLocaleDateString('fr-DZ')} إلى ${new Date(s.contractTo).toLocaleDateString('fr-DZ')}` : ''}.
           </p>
         </Art>
         <Art n="2" t="كيفية إبرام الاتفاقية">

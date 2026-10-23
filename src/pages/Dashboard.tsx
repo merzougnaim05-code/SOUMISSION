@@ -107,9 +107,17 @@ export function DashboardPage() {
       </Section>
 
       <Section title="فترة العقد">
-        <Grid cols={2}>
+        <Grid cols={3}>
           <DateInput k="contractFrom" label="من" />
           <DateInput k="contractTo" label="إلى" />
+          <Field label="عدد أيام المشروع">
+            <input
+              type="number"
+              className="app-input"
+              value={s.dureeJours}
+              onChange={(e) => setSettings({dureeJours: Number(e.target.value)})}
+            />
+          </Field>
         </Grid>
       </Section>
 

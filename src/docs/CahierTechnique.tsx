@@ -1,5 +1,6 @@
 import {useStore} from '../store';
 import {type ArticleItem} from '../types';
+import {intToArabicWords} from '../tafqit';
 import {Article, DocHeader, Page} from './primitives';
 import {FlowSlot, type FlowUnit} from './flow';
 
@@ -79,14 +80,23 @@ export function CahierTechniqueDoc() {
       {/* الغلاف */}
       <Page>
         <DocHeader />
-        <div className="text-center" style={{marginTop: '60pt', fontWeight: 700, fontSize: '26pt'}}>
+        <div className="text-center" style={{fontWeight: 700, fontSize: '26pt'}}>
           دفتــر الشــروط
         </div>
         <div className="text-center" style={{marginTop: '18pt', fontWeight: 700, fontSize: '18pt'}}>
-          العرض التقني
+          الملف التقني (العرض التقني)
+        </div>
+        <div className="text-center mt-3" style={{fontSize: '12pt', fontWeight: 700}}>
+          الجزء الثاني من ثلاثة
         </div>
         <div className="text-center mt-10" style={{fontSize: '14pt'}}>
           البرنامج: ميزانية المؤسسة لسنة {s.annee}
+        </div>
+        <div className="text-center mt-2" style={{fontSize: '13pt'}}>
+          مدة المشروع:{' '}
+          <b>
+            {s.dureeJours} يوماً — {intToArabicWords(s.dureeJours)}
+          </b>
         </div>
         <div className="mt-6" style={{fontSize: '13.5pt'}}>
           <div style={{fontWeight: 700}}>

@@ -22,6 +22,7 @@ import {
 } from '../docs/annexes';
 import {BesoinsDoc} from '../docs/Besoins';
 import {CandidatureDoc} from '../docs/Candidature';
+import {CahierTrachDoc} from '../docs/CahierTrach';
 import {CahierTechniqueDoc} from '../docs/CahierTechnique';
 import {CahierFinancierDoc} from '../docs/CahierFinancier';
 import {ComiteDoc} from '../docs/Comite';
@@ -35,6 +36,7 @@ type DocKey =
   | 'annonce'
   | 'besoins'
   | 'candidature'
+  | 'trach'
   | 'technique'
   | 'financier'
   | 'comite'
@@ -60,8 +62,9 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات ملف الترشح والعرض التقني والمالي'},
   {key: 'besoins', label: 'كشف التقديرات الإدارية للاحتياجات', desc: 'كل حصة في صفحة مستقلة مع المجاميع'},
   {key: 'candidature', label: 'التصريح بالترشح', desc: 'النموذج القانوني الكامل (3 صفحات)'},
-  {key: 'technique', label: 'دفتر الشروط — العرض التقني', desc: 'غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة (المواد 01 إلى 19)'},
-  {key: 'financier', label: 'دفتر الشروط — العرض المالي', desc: 'غلاف + رسالة التعهد + جداول الأسعار الوحدوية + الكشف الكمي والتقديري', needsBidder: true},
+  {key: 'trach', label: 'دفتر الشروط — الجزء 1: ملف الترشح', desc: 'غلاف + لائحة محتويات ملف الترشح + التصريح بالترشح + التصريح بالنزاهة'},
+  {key: 'technique', label: 'دفتر الشروط — الجزء 2: الملف التقني', desc: 'غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة (المواد 01 إلى 19)'},
+  {key: 'financier', label: 'دفتر الشروط — الجزء 3: الملف المالي', desc: 'غلاف + رسالة التعهد + كشف الأسعار + الكشف الكمي والتقديري بثلاث نسب ضريبة (0% / 9% / 19%)', needsBidder: true},
   {key: 'invitation', label: 'دعوة مجلس التربية والتسيير', desc: 'دعوة أعضاء المجلس لانعقاد الجلسة'},
   {key: 'comite', label: 'مقرر تعيين لجنة فتح الأظرفة وتقييم العروض', desc: 'مقرر المدير بتشكيل اللجنة'},
   {key: 'pv', label: 'محضر جلسة فتح الأظرفة', desc: 'محضر اجتماع اللجنة مع عدد العروض لكل حصة'},
@@ -232,6 +235,8 @@ export function DocumentsPage() {
         return <BesoinsDoc />;
       case 'candidature':
         return <CandidatureDoc />;
+      case 'trach':
+        return <CahierTrachDoc />;
       case 'technique':
         return <CahierTechniqueDoc />;
       case 'financier':
@@ -368,8 +373,9 @@ function fileName(
     annonce: `إعلان الاستشارة رقم ${s.numeroAnnonce} ${s.annee}`,
     besoins: `كشف الاحتياجات - ${lot?.nom ?? ''} ${s.annee}`,
     candidature: 'التصريح بالترشح',
-    technique: 'دفتر الشروط التقني',
-    financier: `العرض المالي - ${bidder?.nom ?? ''}`,
+    trach: 'دفتر الشروط - ملف الترشح',
+    technique: 'دفتر الشروط - الملف التقني',
+    financier: `الملف المالي - ${bidder?.nom ?? ''}`,
     invitation: 'دعوة مجلس التربية والتسيير',
     comite: 'مقرر تعيين لجنة فتح الأظرفة',
     pv: 'محضر جلسة فتح الأظرفة',
