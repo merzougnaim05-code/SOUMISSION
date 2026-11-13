@@ -203,7 +203,6 @@ function Router() {
 }
 
 import {PrintProvider} from './printSettings';
-import {DataHubWidget} from './components/DataHubWidget';
 
 export default function App() {
   return (
@@ -211,15 +210,6 @@ export default function App() {
       <HeatProvider>
         <PrintProvider>
           <Router />
-          <DataHubWidget
-            appKey="soumission"
-            appName="برنامج الاستشارة"
-            storageKeys={{
-              state: 'estichara-state-v2',
-              heat: 'estichara-heat-v2',
-              print: 'print-settings-v1',
-            }}
-          />
         </PrintProvider>
       </HeatProvider>
     </StoreProvider>
