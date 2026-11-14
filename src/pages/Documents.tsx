@@ -22,6 +22,9 @@ import {
   NyzahaDoc,
 } from '../docs/annexes';
 import {BesoinsDoc} from '../docs/Besoins';
+import {ConseilRegDoc} from '../docs/ConseilReg';
+import {MateriauxRegDoc} from '../docs/MateriauxReg';
+import {MouninsRegDoc} from '../docs/MouninsReg';
 import {CandidatureDoc} from '../docs/Candidature';
 import {CahierTrachDoc} from '../docs/CahierTrach';
 import {CahierTechniqueDoc} from '../docs/CahierTechnique';
@@ -38,6 +41,7 @@ import {InvitationDoc} from '../docs/Invitation';
 type DocKey =
   | 'annonce'
   | 'besoins'
+  | 'materiaux-reg'
   | 'candidature'
   | 'trach'
   | 'technique'
@@ -51,6 +55,7 @@ type DocKey =
   | 'annonce-provisoire'
   | 'contrat'
   | 'invitation'
+  | 'conseil-reg'
   | 'offres-recues'
   | 'nyzaha'
   | 'iqrar'
@@ -61,6 +66,7 @@ type DocKey =
   | 'annonce-finale'
   | 'azhar'
   | 'fiche-moun'
+  | 'mounins-reg'
   | 'negoce'
   | 'etapes'
   | 'dossier';
@@ -68,12 +74,14 @@ type DocKey =
 const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needsBidder?: boolean}[] = [
   {key: 'annonce', label: 'إعلان عن الاستشارة', desc: 'الإعلان الرسمي مع محتويات ملف الترشح والعرض التقني والمالي'},
   {key: 'besoins', label: 'كشف التقديرات الإدارية للاحتياجات', desc: 'كل حصة في صفحة مستقلة مع المجاميع'},
+  {key: 'materiaux-reg', label: 'المواد محل الاستشارة', desc: 'قائمة مواد كل الحصص بالكميات والأسعار المرجعية (ورقة المواد الأصلية)'},
   {key: 'candidature', label: 'التصريح بالترشح', desc: 'النموذج القانوني الكامل (3 صفحات)'},
   {key: 'trach', label: 'دفتر الشروط — الجزء 1: ملف الترشح', desc: 'غلاف + لائحة محتويات ملف الترشح + التصريح بالترشح + التصريح بالنزاهة'},
   {key: 'technique', label: 'دفتر الشروط — الجزء 2: الملف التقني', desc: 'غلاف + فهرس + التصريح بالاكتتاب + التعليمات العامة (المواد 01 إلى 19)'},
   {key: 'financier', label: 'دفتر الشروط — الجزء 3: الملف المالي', desc: 'غلاف + رسالة التعهد + كشف الأسعار + الكشف الكمي والتقديري بثلاث نسب ضريبة (0% / 9% / 19%)', needsBidder: true},
   {key: 'cahiers', label: '🖨 الأجزاء الثلاثة معاً — طباعة كاملة', desc: 'ملف الترشح + الملف التقني + الملف المالي في جلسة واحدة، بترقيم مستقل لكل دفتر', needsBidder: true},
   {key: 'invitation', label: 'دعوة مجلس التربية والتسيير', desc: 'دعوة أعضاء المجلس لانعقاد الجلسة'},
+  {key: 'conseil-reg', label: 'جدول أعضاء مجلس التربية والتوجيه', desc: 'تشكيلة المجلس بالصفات وخانة الحضور (ورقة أعضاء المجلس)'},
   {key: 'comite', label: 'مقرر تعيين لجنة فتح الأظرفة وتقييم العروض', desc: 'مقرر المدير بتشكيل اللجنة'},
   {key: 'pv', label: 'محضر جلسة فتح الأظرفة', desc: 'محضر اجتماع اللجنة مع عدد العروض لكل حصة'},
   {key: 'offres-recues', label: 'جدول العروض المقدمة', desc: 'سجل المتعهدين ومبالغ عروضهم على الحصة بعمودين', needsLot: true},
@@ -91,6 +99,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'annonce-finale', label: 'إعلان عن المنح النهائي', desc: 'بعد انتهاء آجال الطعون — جدول المنح النهائي'},
   {key: 'azhar', label: 'إعذار الممون', desc: 'في حال الإخلال ببنود الاتفاقية', needsLot: true},
   {key: 'fiche-moun', label: 'ملف الممون', desc: 'بطاقة معطيات الممون (سجل تجاري، جباية، بنك)', needsLot: true, needsBidder: true},
+  {key: 'mounins-reg', label: 'معلومات الممونين المختارين', desc: 'الفائزون بالحصص مع سجلاتهم الجبائية والبنكية (ورقة معلومات المتعهدين)'},
   {key: 'negoce', label: 'محضر التفاوض / مراجعة الأسعار', desc: 'محضران أسعار المواد والكميات الجديدة', needsLot: true, needsBidder: true},
   {key: 'etapes', label: 'خطوات تنفيذ الاستشارة', desc: 'جدول خطوات الإجراءات الإدارية'},
   {key: 'dossier', label: 'ملف الترشح — الغلاف', desc: 'غلاف دفتر الشروط وصفحة وصف الاستشارة'},
@@ -322,6 +331,8 @@ export function DocumentsPage() {
         return <AnnonceDoc />;
       case 'besoins':
         return <BesoinsDoc />;
+      case 'materiaux-reg':
+        return <MateriauxRegDoc />;
       case 'candidature':
         return <CandidatureDoc />;
       case 'trach':
@@ -340,6 +351,8 @@ export function DocumentsPage() {
         );
       case 'invitation':
         return <InvitationDoc />;
+      case 'conseil-reg':
+        return <ConseilRegDoc />;
       case 'comite':
         return <ComiteDoc />;
       case 'pv':
@@ -374,6 +387,8 @@ export function DocumentsPage() {
         return <AzharDoc lotId={lotId} />;
       case 'fiche-moun':
         return <FichePrestataireDoc lotId={lotId} bidderId={bidderId} />;
+      case 'mounins-reg':
+        return <MouninsRegDoc />;
       case 'negoce':
         return <NegotiationDoc lotId={lotId} bidderId={bidderId} />;
       case 'etapes':
@@ -490,12 +505,14 @@ function fileName(
   const names: Record<DocKey, string> = {
     annonce: `إعلان الاستشارة رقم ${s.numeroAnnonce} ${s.annee}`,
     besoins: `كشف الاحتياجات - ${lot?.nom ?? ''} ${s.annee}`,
+    'materiaux-reg': `المواد محل الاستشارة ${s.annee}`,
     candidature: 'التصريح بالترشح',
     trach: 'دفتر الشروط - ملف الترشح',
     technique: 'دفتر الشروط - الملف التقني',
     financier: `الملف المالي - ${bidder?.nom ?? ''}`,
     cahiers: 'دفاتر الشروط الثلاثة',
     invitation: 'دعوة مجلس التربية والتسيير',
+    'conseil-reg': 'جدول أعضاء مجلس التربية والتوجيه',
     comite: 'مقرر تعيين لجنة فتح الأظرفة',
     pv: 'محضر جلسة فتح الأظرفة',
     'offres-recues': `العروض المقدمة - ${lot?.nom ?? ''}`,
@@ -513,6 +530,7 @@ function fileName(
     'annonce-finale': 'إعلان عن المنح النهائي',
     azhar: 'إعذار الممون',
     'fiche-moun': `ملف الممون - ${bidder?.nom ?? ''}`,
+    'mounins-reg': 'معلومات الممونين المختارين',
     negoce: `محضر التفاوض - ${lot?.nom ?? ''}`,
     etapes: 'خطوات تنفيذ الاستشارة',
     dossier: 'ملف الترشح - الغلاف',
