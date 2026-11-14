@@ -588,9 +588,10 @@ export function AnnonceFinaleDoc() {
       <table className="table-doc">
         <thead>
           <tr>
-            <th style={{width: '32%'}}>عنوان العملية</th>
-            <th style={{width: '38%'}}>المتعهد الفائز</th>
-            <th>مبلغ العرض</th>
+            <th style={{width: '26%'}}>عنوان العملية</th>
+            <th style={{width: '32%'}}>المتعهد الفائز</th>
+            <th style={{width: '22%'}}>رقم التعريف الجبائي</th>
+            <th>مبلغ العرض بعد المراجعة</th>
           </tr>
         </thead>
         <tbody>
@@ -598,12 +599,13 @@ export function AnnonceFinaleDoc() {
             <tr key={lot.id}>
               <td>{lot.nom}</td>
               <td style={{fontWeight: 700}}>{bidder?.nom}</td>
+              <td>{bidder?.nif?.trim() ? bidder.nif : '—'}</td>
               <td>{total ? fmt(total.max) : ''}</td>
             </tr>
           ))}
           {winners.length === 0 && (
             <tr>
-              <td colSpan={3}>لم يتم تحديد فائزين بعد — يرجى تسجيل العروض وإتمام التقييم.</td>
+              <td colSpan={4}>لم يتم تحديد فائزين بعد — يرجى تسجيل العروض وإتمام التقييم.</td>
             </tr>
           )}
         </tbody>

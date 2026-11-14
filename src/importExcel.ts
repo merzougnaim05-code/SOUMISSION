@@ -4,7 +4,7 @@
  *  2) ملف الإستشارة الأصلي «الإستشـارة 2025.xlsb» أو نحوه (المواد، معلومات المتعهدين، عقد التموين).
  */
 import * as XLSX from 'xlsx';
-import type {Bidder, Lot, Settings} from './types';
+import type {Bidder, Committee, Lot, Settings} from './types';
 
 export interface ImportedOfferRef {
   lotNumero: number;
@@ -20,6 +20,8 @@ export interface ImportResult {
   bidders: Bidder[];
   offers: ImportedOfferRef[];
   notes: string[];
+  /** تشكيلة مجلس التربية والتوجيه (من ورقة «أعضاء المجلس» في الملف الأصلي) */
+  committee?: Committee;
 }
 
 type Row = unknown[];
@@ -382,6 +384,28 @@ function importOriginFormat(wb: XLSX.WorkBook, res: ImportResult): void {
     if (sessionISO) s.dateSessionConseil = sessionISO;
     if (!from && !to && !sessionISO) {
       notes.push('فترة العقد وجلسة الاستشارة في الملف تشير إلى سنة أخرى خلافاً للسنة المالية — أُهملت لتجنب نشر بيانات خاطئة؛ عدّلها من تبويب «المعطيات».');
+    }
+  }
+
+  // أعضاء مجلس التربية والتوجيه من ورقة «أعضاء المجلس» (الاسم + الصفة) —
+  // صاحب صفة «مدير ...» يعتبر رئيساً للمجلس، والبقية أعضاء
+  const cRows = aoa(wb, ['أعضاء المجلس']) ?? [];
+  const named: {nom: string; role: string}[] = [];
+  for (const r of cRows) {
+    const nom = S(r[1]);
+    const role = S(r[2]);
+    if (!nom || /اللقب|الاسم|الصفة|الحضور|الغياب/.test(nom + role)) continue;
+    if (/^\d+$/.test(nom)) continue;
+    // صفوف «الصفة فقط» دون اسم (نماذج فارغة: ممثل الاساتذة، مستشار التربية...)
+    if (!role && /^(ممثل|رئيس|مستشار)/.test(nom)) continue;
+    named.push({nom, role});
+  }
+  if (named.length > 0) {
+    const president = named.find((m) => /مدير/.test(m.role))?.nom ?? '';
+    const membres = named.filter((m) => m.nom !== president).map((m) => m.nom);
+    if (president || membres.length > 0) {
+      res.committee = {president, membres};
+      notes.push(`استُورد تشكيلة مجلس التربية (${named.length} أسماء) من ورقة «أعضاء المجلس».`);
     }
   }
 

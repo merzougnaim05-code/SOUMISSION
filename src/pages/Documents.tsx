@@ -28,6 +28,8 @@ import {CahierFinancierDoc} from '../docs/CahierFinancier';
 import {ComiteDoc} from '../docs/Comite';
 import {ProcesVerbalDoc} from '../docs/ProcesVerbal';
 import {ComparaisonDoc} from '../docs/Comparaison';
+import {EvalGridDoc} from '../docs/EvalGrid';
+import {OffresRecuesDoc} from '../docs/OffresRecues';
 import {ResultatsDoc} from '../docs/Resultats';
 import {ContratDoc} from '../docs/Contrat';
 import {InvitationDoc} from '../docs/Invitation';
@@ -43,9 +45,11 @@ type DocKey =
   | 'comite'
   | 'pv'
   | 'comparaison'
+  | 'eval-grid'
   | 'resultats'
   | 'contrat'
   | 'invitation'
+  | 'offres-recues'
   | 'nyzaha'
   | 'iqrar'
   | 'coef'
@@ -70,7 +74,9 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'invitation', label: 'دعوة مجلس التربية والتسيير', desc: 'دعوة أعضاء المجلس لانعقاد الجلسة'},
   {key: 'comite', label: 'مقرر تعيين لجنة فتح الأظرفة وتقييم العروض', desc: 'مقرر المدير بتشكيل اللجنة'},
   {key: 'pv', label: 'محضر جلسة فتح الأظرفة', desc: 'محضر اجتماع اللجنة مع عدد العروض لكل حصة'},
+  {key: 'offres-recues', label: 'جدول العروض المقدمة', desc: 'سجل المتعهدين ومبالغ عروضهم على الحصة بعمودين', needsLot: true},
   {key: 'comparaison', label: 'جدول مقارنة العروض', desc: 'مقارنة وتقييم العروض المالية لكل حصة مع الترتيب', needsLot: true},
+  {key: 'eval-grid', label: 'كشف التقييم التفصيلي للحصة', desc: 'شبكة المواد × أسعار كل المتعهدين ومبالغها (كشف التقييم الأصلي)', needsLot: true},
   {key: 'resultats', label: 'إعلان نتائج الاستشارة', desc: 'جدول الفائزين بالمنح المؤقت للاتفاقية'},
   {key: 'contrat', label: 'عقد تموين', desc: 'العقد الكامل مع مبلغ الاتفاقية تفقيطاً', needsLot: true, needsBidder: true},
   {key: 'nyzaha', label: 'التصريح بالنزاهة', desc: 'صيغة القانون 23-12 / من وثائق ملف الترشح', needsBidder: true},
@@ -150,7 +156,7 @@ function missingData(
 }
 
 export function DocumentsPage() {
-  const {state, setSettings, setLots, setBidders, setOffers} = useStore();
+  const {state, setSettings, setLots, setBidders, setOffers, setCommittee} = useStore();
   const {vars, settings: printSettings, set: setPrint} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
@@ -226,6 +232,17 @@ export function DocumentsPage() {
       if (Object.keys(res.settings).length > 0) {
         setSettings(res.settings);
         summary.push('• المعطيات العامة للمؤسسة');
+      }
+
+      // تشكيلة مجلس التربية: تُملأ الخانات الفارغة فقط دون المساس بما هو مدخل
+      if (res.committee && (res.committee.president || res.committee.membres.length > 0)) {
+        const president = state.committee.president?.trim() || res.committee.president || '';
+        const merged = state.committee.membres.filter((m) => m?.trim());
+        for (const m of res.committee.membres) {
+          if (m?.trim() && !merged.includes(m)) merged.push(m);
+        }
+        setCommittee({president, membres: merged});
+        summary.push('• تشكيلة مجلس التربية والتوجيه');
       }
 
       window.alert(
@@ -324,8 +341,12 @@ export function DocumentsPage() {
         return <ComiteDoc />;
       case 'pv':
         return <ProcesVerbalDoc />;
+      case 'offres-recues':
+        return <OffresRecuesDoc lotId={lotId} />;
       case 'comparaison':
         return <ComparaisonDoc lotId={lotId} />;
+      case 'eval-grid':
+        return <EvalGridDoc lotId={lotId} />;
       case 'resultats':
         return <ResultatsDoc />;
       case 'contrat':
@@ -472,7 +493,9 @@ function fileName(
     invitation: 'دعوة مجلس التربية والتسيير',
     comite: 'مقرر تعيين لجنة فتح الأظرفة',
     pv: 'محضر جلسة فتح الأظرفة',
+    'offres-recues': `العروض المقدمة - ${lot?.nom ?? ''}`,
     comparaison: `مقارنة العروض - ${lot?.nom ?? ''}`,
+    'eval-grid': `كشف التقييم التفصيلي - ${lot?.nom ?? ''}`,
     resultats: 'إعلان نتائج الاستشارة',
     contrat: `عقد تموين - ${lot?.nom ?? ''} - ${bidder?.nom ?? ''}`,
     nyzaha: 'التصريح بالنزاهة',
