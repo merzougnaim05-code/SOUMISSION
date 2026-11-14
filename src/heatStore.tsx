@@ -3,8 +3,10 @@ import type {ReactNode} from 'react';
 import type {Committee, Entrepreneur, HeatArticle, HeatOffer, HeatSettings, HeatState, Ouvrage} from './types';
 import {defaultHeatState} from './data/heatSeed';
 import {defaultHeatArticles} from './data/heatArticles';
+import {autoSnapshot} from './backup';
 
 const KEY = 'estichara-heat-v2';
+let backupTimer = 0;
 
 interface HeatCtx {
   state: HeatState;
@@ -49,6 +51,9 @@ export function HeatProvider({children}: {children: ReactNode}) {
     } catch {
       /* تجاهل */
     }
+    // لقطة احتياطية تلقائية بعد 5 ثوانٍ من آخر تغيير (مشتركة مع وحدة التموين)
+    clearTimeout(backupTimer);
+    backupTimer = window.setTimeout(() => void autoSnapshot(), 5000) as unknown as number;
   }, [state]);
 
   const value = useMemo<HeatCtx>(

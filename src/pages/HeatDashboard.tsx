@@ -1,5 +1,6 @@
 import {useHeat} from '../heatStore';
 import {Field, Grid, Section} from '../ui';
+import {BackupCard} from '../components/BackupCard';
 
 export function HeatDashboard() {
   const {state, setSettings, setCommittee, resetAll} = useHeat();
@@ -148,6 +149,7 @@ export function HeatDashboard() {
           )}
         </div>
       </Section>
+      <BackupCard />
     </div>
   );
 }

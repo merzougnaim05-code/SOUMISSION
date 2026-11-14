@@ -116,6 +116,7 @@ export function defaultState(): AppState {
       agence: '',
       rib: '',
       dateSessionConseil: '',
+      azharNum: 1,
     },
     lots: [lot1, lot2, lot3, lot4],
     bidders: [],
@@ -125,5 +126,8 @@ export function defaultState(): AppState {
       membres: ['', '', '', ''],
     },
     articles: defaultArticles(),
+    evalLocked: false,
+    negotiated: {},
+    docLog: [],
   };
 }

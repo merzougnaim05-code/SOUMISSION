@@ -11,7 +11,7 @@ export function AnnonceProvisoireDoc() {
   const rows = state.lots.map((lot) => {
     const ranked = rankLot(lot, state.bidders, state.offers);
     const w = ranked.find((r) => r.rank === 1);
-    return {lot, bidder: w?.bidder, total: w?.totals};
+    return {lot, bidder: w?.bidder, total: w?.totals, neg: state.negotiated?.[lot.id]};
   });
 
   return (
@@ -52,12 +52,12 @@ export function AnnonceProvisoireDoc() {
           </tr>
         </thead>
         <tbody>
-          {rows.map(({lot, bidder, total}) => (
+          {rows.map(({lot, bidder, total, neg}) => (
             <tr key={lot.id}>
               <td>{lot.nom}</td>
               <td style={{fontWeight: 700}}>{bidder?.nom || '..........................'}</td>
               <td>{bidder?.nif?.trim() ? bidder.nif : '..........................'}</td>
-              <td>{total && total.complete ? fmt(total.max) : '..........................'}</td>
+              <td>{neg && neg > 0 ? fmt(neg) : total && total.complete ? fmt(total.max) : '..........................'}</td>
             </tr>
           ))}
           {rows.length === 0 && (

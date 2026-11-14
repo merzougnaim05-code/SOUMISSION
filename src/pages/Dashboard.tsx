@@ -1,5 +1,6 @@
 import {useStore} from '../store';
 import {Field, Grid, Section} from '../ui';
+import {BackupCard} from '../components/BackupCard';
 
 export function DashboardPage() {
   const {state, setSettings, setCommittee, resetAll} = useStore();
@@ -73,6 +74,14 @@ export function DashboardPage() {
               className="app-input"
               value={s.numeroAnnonce}
               onChange={(e) => setSettings({numeroAnnonce: Number(e.target.value)})}
+            />
+          </Field>
+          <Field label="رقم الإعذار الأخير الموجه للممون">
+            <input
+              type="number"
+              className="app-input"
+              value={s.azharNum}
+              onChange={(e) => setSettings({azharNum: Number(e.target.value) || 1})}
             />
           </Field>
           <DateInput k="dateAnnonce" label="تاريخ الإعلان عن الاستشارة" />
@@ -179,6 +188,7 @@ export function DashboardPage() {
           )}
         </div>
       </Section>
+      <BackupCard />
     </div>
   );
 }

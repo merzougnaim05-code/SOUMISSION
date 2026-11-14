@@ -3,8 +3,10 @@ import type {ReactNode} from 'react';
 import type {AppState, ArticleItem, Bidder, Committee, Lot, Offer, Settings} from './types';
 import {defaultState} from './data/seed';
 import {defaultArticles} from './data/texts';
+import {autoSnapshot} from './backup';
 
 const KEY = 'estichara-state-v2';
+let backupTimer = 0;
 
 interface StoreCtx {
   state: AppState;
@@ -14,6 +16,9 @@ interface StoreCtx {
   setOffers: (o: Offer[]) => void;
   setCommittee: (c: Committee) => void;
   setArticles: (a: ArticleItem[]) => void;
+  setEvalLocked: (v: boolean) => void;
+  setNegotiated: (lotId: string, amount: number | null) => void;
+  pushDocLog: (doc: string, label: string) => void;
   resetAll: () => void;
 }
 
@@ -52,6 +57,9 @@ export function StoreProvider({children}: {children: ReactNode}) {
     } catch {
       /* تجاهل */
     }
+    // لقطة احتياطية تلقائية بعد 5 ثوانٍ من آخر تغيير (مرة كل 6 ساعات كحد أقصى داخل backup.ts)
+    clearTimeout(backupTimer);
+    backupTimer = window.setTimeout(() => void autoSnapshot(), 5000) as unknown as number;
   }, [state]);
 
   const value = useMemo<StoreCtx>(
@@ -63,6 +71,16 @@ export function StoreProvider({children}: {children: ReactNode}) {
       setOffers: (offers) => setState((st) => ({...st, offers})),
       setCommittee: (committee) => setState((st) => ({...st, committee})),
       setArticles: (articles) => setState((st) => ({...st, articles})),
+      setEvalLocked: (evalLocked) => setState((st) => ({...st, evalLocked})),
+      setNegotiated: (lotId, amount) =>
+        setState((st) => {
+          const next = {...(st.negotiated ?? {})};
+          if (amount === null || isNaN(amount) || amount <= 0) delete next[lotId];
+          else next[lotId] = amount;
+          return {...st, negotiated: next};
+        }),
+      pushDocLog: (doc, label) =>
+        setState((st) => ({...st, docLog: [{ts: Date.now(), doc, label}, ...(st.docLog ?? [])].slice(0, 50)})),
       resetAll: () => setState(defaultState()),
     }),
     [state],
@@ -125,4 +143,16 @@ export function rankLot(
   const sorted = [...rows].filter((r) => r.totals.complete).sort((a, b) => a.totals.max - b.totals.max);
   sorted.forEach((r, i) => (r.rank = i + 1));
   return rows;
+}
+
+/** مبلغ الحصة المعتمد في وثائق المنح والعقد: مبلغ المراجعة إن سُجل
+ *  وإلا مجموع العرض الأصلي */
+export function lotAmounts(
+  state: AppState,
+  lotId: string,
+  totals?: {min: number; max: number; complete: boolean},
+): {min: number; max: number; complete: boolean} {
+  const neg = state.negotiated?.[lotId];
+  if (neg && neg > 0) return {min: neg, max: neg, complete: true};
+  return totals ?? {min: 0, max: 0, complete: false};
 }

@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {fmt, offerTotals, useStore} from '../store';
+import {fmt, lotAmounts, offerTotals, useStore} from '../store';
 import {intToArabicWords, tafqitDZD} from '../tafqit';
 import {DocHeader, Page, SignRow} from './primitives';
 
@@ -10,7 +10,8 @@ export function ContratDoc({bidderId, lotId}: {bidderId: string; lotId: string})
   const bidder = state.bidders.find((b) => b.id === bidderId);
   const lot = state.lots.find((l) => l.id === lotId) ?? state.lots[0];
   const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
-  const totals = offerTotals(lot, offer);
+  // مبلغ العقد: بعد المراجعة (التفاوض) إن سُجل وإلا مجموع العرض الأصلي
+  const totals = lotAmounts(state, lotId, offerTotals(lot, offer));
 
   const Art = ({n, t, children}: {n: string; t: string; children?: ReactNode}) => (
     <div className="doc-art">

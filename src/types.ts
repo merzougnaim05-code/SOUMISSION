@@ -58,6 +58,8 @@ export interface Settings {
   agence: string;
   rib: string;
   dateSessionConseil: string;
+  /** رقم الإعذار الموجه للممون (متسلسل يدوياً) */
+  azharNum: number;
 }
 
 export interface Committee {
@@ -80,6 +82,12 @@ export interface AppState {
   offers: Offer[];
   committee: Committee;
   articles: ArticleItem[];
+  /** قفل التقييم بعد إعلان النتائج: يمنع تعديل الأسعار عرضاً */
+  evalLocked?: boolean;
+  /** مبلغ العرض بعد المراجعة (التفاوض) لكل حصة — يتجاوز مجموع العرض في وثائق المنح والعقد */
+  negotiated?: Record<string, number>;
+  /** سجل آخر طباعة الوثائق (50 حدثاً كحد أقصى) */
+  docLog?: {ts: number; doc: string; label: string}[];
 }
 
 /* ================== استشارة الأشغال المركزية ================== */

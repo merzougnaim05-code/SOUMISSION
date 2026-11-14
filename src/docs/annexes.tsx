@@ -558,7 +558,7 @@ export function AnnonceFinaleDoc() {
   const winners = state.lots.map((lot) => {
     const ranked = rankLot(lot, state.bidders, state.offers);
     const w = ranked.find((r) => r.rank === 1);
-    return {lot, bidder: w?.bidder, total: w?.totals};
+    return {lot, bidder: w?.bidder, total: w?.totals, neg: state.negotiated?.[lot.id]};
   });
   return (
     <Page>
@@ -594,12 +594,12 @@ export function AnnonceFinaleDoc() {
           </tr>
         </thead>
         <tbody>
-          {winners.map(({lot, bidder, total}) => (
+          {winners.map(({lot, bidder, total, neg}) => (
             <tr key={lot.id}>
               <td>{lot.nom}</td>
               <td style={{fontWeight: 700}}>{bidder?.nom || '..........................'}</td>
               <td>{bidder?.nif?.trim() ? bidder.nif : '..........................'}</td>
-              <td>{total && total.complete ? fmt(total.max) : '..........................'}</td>
+              <td>{neg && neg > 0 ? fmt(neg) : total && total.complete ? fmt(total.max) : '..........................'}</td>
             </tr>
           ))}
           {winners.length === 0 && (
@@ -805,7 +805,7 @@ export function AzharDoc({lotId}: {lotId: string}) {
         style={{justifyContent: 'center', gap: '3mm', minHeight: '8mm', width: '72%', margin: '2mm auto 5mm'}}
       >
         <span style={{fontWeight: 700, fontSize: '16pt'}}>الإعذار رقم</span>
-        <span style={{fontWeight: 700, fontSize: '16pt'}}>1</span>
+        <span style={{fontWeight: 700, fontSize: '16pt'}}>{s.azharNum || 1}</span>
         <span style={{fontWeight: 700, fontSize: '16pt'}}>/ {s.annee}</span>
       </GrayBar>
 

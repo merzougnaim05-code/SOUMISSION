@@ -7,18 +7,21 @@ export function OffersPage() {
   const {state, setOffers} = useStore();
   const [bidderId, setBidderId] = useState(state.bidders[0]?.id ?? '');
   const [lotId, setLotId] = useState(state.lots[0].id);
+  const locked = state.evalLocked === true;
 
   const lot = state.lots.find((l) => l.id === lotId) ?? state.lots[0];
   const offer = state.offers.find((o) => o.bidderId === bidderId && o.lotId === lot.id);
   const totals = offerTotals(lot, offer);
 
   const setPrice = (materiauId: string, p: number) => {
+    if (locked) return;
     const others = state.offers.filter((o) => !(o.bidderId === bidderId && o.lotId === lot.id));
     const prix = {...(offer?.prix ?? {}), [materiauId]: p};
     setOffers([...others, {bidderId, lotId: lot.id, prix}]);
   };
 
   const fillFromRef = () => {
+    if (locked) return;
     const prix: Record<string, number> = {};
     for (const mm of lot.materiaux) prix[mm.id] = mm.prixRef;
     const others = state.offers.filter((o) => !(o.bidderId === bidderId && o.lotId === lot.id));
@@ -29,6 +32,15 @@ export function OffersPage() {
 
   return (
     <div>
+      {locked && (
+        <div className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 flex items-center gap-2">
+          <span className="text-lg">🔒</span>
+          <span>
+            <b>التقييم مقفل</b> — الأسعار ممنوعة التعديل بعد إعلان النتائج. لفتح القفل: تبويب «التقييم» ← زر
+            «فتح قفل التقييم».
+          </span>
+        </div>
+      )}
       <Section title="تسجيل العروض المقدمة (الأسعار الوحدوية بكامل الرسوم)">
         <div className="flex flex-wrap items-end gap-3 mb-4">
           <div>
@@ -54,6 +66,7 @@ export function OffersPage() {
           <Btn variant="ghost" small onClick={fillFromRef}>
             تعبئة بالأسعار المرجعية (للتجربة)
           </Btn>
+          {locked && <span className="text-xs font-bold text-amber-700">🔒 الأسعار مقفلة</span>}
         </div>
 
         {state.bidders.length === 0 ? (
@@ -90,6 +103,7 @@ export function OffersPage() {
                           dir="ltr"
                           style={{textAlign: 'center'}}
                           value={p || ''}
+                          disabled={locked}
                           onChange={(e) => setPrice(mm.id, Number(e.target.value) || 0)}
                         />
                       </td>
@@ -123,10 +137,38 @@ export function OffersPage() {
 
 /** التقييم: ترتيب العروض والفائزون لكل حصة */
 export function EvaluationPage() {
-  const {state} = useStore();
+  const {state, setEvalLocked, setNegotiated} = useStore();
 
   return (
     <div>
+      <div className="flex flex-wrap items-center gap-3 mb-4 bg-white rounded-xl border border-slate-200 p-3">
+        {state.evalLocked ? (
+          <>
+            <span className="text-amber-700 font-bold text-sm">🔒 التقييم مقفل — الأسعار محمية من التعديل</span>
+            <Btn
+              variant="ghost"
+              small
+              onClick={() => {
+                if (confirm('فتح قفل التقييم والسماح بتعديل الأسعار من جديد؟')) setEvalLocked(false);
+              }}
+            >
+              🔓 فتح قفل التقييم
+            </Btn>
+          </>
+        ) : (
+          <>
+            <span className="text-slate-500 text-sm">التقييم مفتوح للتعديل</span>
+            <Btn
+              small
+              onClick={() => {
+                if (confirm('قفل التقييم؟ سيُمنع تعديل الأسعار من تبويب «العروض» إلى حين الفتح.')) setEvalLocked(true);
+              }}
+            >
+              🔒 قفل التقييم بعد إعلان النتائج
+            </Btn>
+          </>
+        )}
+      </div>
       {state.lots.map((lot) => {
         const ranked = rankLot(lot, state.bidders, state.offers);
         const hasComplete = ranked.some((r) => r.totals.complete);
@@ -170,6 +212,19 @@ export function EvaluationPage() {
                 </tbody>
               </table>
             )}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <label className="app-label !mb-0">مبلغ العرض بعد المراجعة (دج) — اختياري:</label>
+              <input
+                type="number"
+                className="app-input w-48"
+                dir="ltr"
+                value={state.negotiated?.[lot.id] ?? ''}
+                onChange={(e) => setNegotiated(lot.id, Number(e.target.value) || null)}
+              />
+              <span className="text-xs text-slate-400">
+                يُعتمد في إعلانات المنح المؤقتة والنهائية وفي العقد بدل مجموع العرض الأصلي
+              </span>
+            </div>
           </Section>
         );
       })}

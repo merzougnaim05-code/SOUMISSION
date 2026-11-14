@@ -168,7 +168,7 @@ function missingData(
 }
 
 export function DocumentsPage() {
-  const {state, setSettings, setLots, setBidders, setOffers, setCommittee} = useStore();
+  const {state, setSettings, setLots, setBidders, setOffers, setCommittee, pushDocLog} = useStore();
   const {vars, settings: printSettings, set: setPrint} = usePrint();
   const [docKey, setDocKey] = useState<DocKey>('annonce');
   const [lotId, setLotId] = useState(state.lots[0].id);
@@ -417,12 +417,28 @@ export function DocumentsPage() {
             </button>
           ))}
         </div>
+        {(state.docLog?.length ?? 0) > 0 && (
+          <details className="mt-3 border-t border-slate-100 pt-2">
+            <summary className="text-xs font-bold text-slate-500 cursor-pointer">📜 سجل آخر طباعات ({state.docLog!.length})</summary>
+            <ul className="mt-1 space-y-0.5 max-h-40 overflow-y-auto">
+              {state.docLog!.slice(0, 10).map((e, i) => {
+                const d = new Date(e.ts);
+                return (
+                  <li key={i} className="text-[11px] text-slate-400 truncate">
+                    {String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')} {String(d.getHours()).padStart(2, '0')}:
+                    {String(d.getMinutes()).padStart(2, '0')} — {e.label}
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        )}
       </div>
 
       {/* منطقة المعاينة والطباعة */}
       <div className="flex-1 min-w-0">
         <div className="no-print flex flex-wrap items-center gap-3 bg-white rounded-xl shadow-sm border border-slate-200 p-3 mb-4">
-          <Btn onClick={() => printWithAutoFix(setPrint)}>🖨 طباعة آمنة / حفظ PDF</Btn>
+          <Btn onClick={() => { printWithAutoFix(setPrint); pushDocLog(docKey, meta.label); }}>🖨 طباعة آمنة / حفظ PDF</Btn>
           <Btn variant="ghost" onClick={() => exportWord(printRef.current, `${fileName(state, docKey, lotId, bidderId)}.doc`)}>
             ⬇ تحميل Word
           </Btn>
