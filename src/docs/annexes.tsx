@@ -554,13 +554,12 @@ export function EtapesDoc() {
 export function AnnonceFinaleDoc() {
   const {state} = useStore();
   const s = state.settings;
-  const winners = state.lots
-    .map((lot) => {
-      const ranked = rankLot(lot, state.bidders, state.offers);
-      const w = ranked.find((r) => r.rank === 1);
-      return {lot, bidder: w?.bidder, total: w?.totals};
-    })
-    .filter((x) => x.bidder);
+  // كل الحصص تُعرض دائماً — الفائز أو حقل منقّط إن لم يُحدد بعد
+  const winners = state.lots.map((lot) => {
+    const ranked = rankLot(lot, state.bidders, state.offers);
+    const w = ranked.find((r) => r.rank === 1);
+    return {lot, bidder: w?.bidder, total: w?.totals};
+  });
   return (
     <Page>
       <DocHeader />
@@ -598,14 +597,14 @@ export function AnnonceFinaleDoc() {
           {winners.map(({lot, bidder, total}) => (
             <tr key={lot.id}>
               <td>{lot.nom}</td>
-              <td style={{fontWeight: 700}}>{bidder?.nom}</td>
-              <td>{bidder?.nif?.trim() ? bidder.nif : '—'}</td>
-              <td>{total ? fmt(total.max) : ''}</td>
+              <td style={{fontWeight: 700}}>{bidder?.nom || '..........................'}</td>
+              <td>{bidder?.nif?.trim() ? bidder.nif : '..........................'}</td>
+              <td>{total && total.complete ? fmt(total.max) : '..........................'}</td>
             </tr>
           ))}
           {winners.length === 0 && (
             <tr>
-              <td colSpan={4}>لم يتم تحديد فائزين بعد — يرجى تسجيل العروض وإتمام التقييم.</td>
+              <td colSpan={4}>لم تُسجَّل حصص بعد — أضفها من تبويب «الحصص والمواد».</td>
             </tr>
           )}
         </tbody>

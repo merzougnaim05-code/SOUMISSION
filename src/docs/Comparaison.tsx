@@ -65,11 +65,16 @@ export function ComparaisonDoc({lotId}: {lotId: string}) {
                 </td>
               </tr>
             ))}
-            {ranked.length === 0 && (
-              <tr>
-                <td colSpan={5}>لا توجد عروض مسجلة على هذه الحصة.</td>
-              </tr>
-            )}
+            {ranked.length === 0 &&
+              Array.from({length: 5}, (_, i) => (
+                <tr key={`ph-${i}`}>
+                  <td style={{textAlign: 'right'}}>..........................</td>
+                  <td>..............</td>
+                  <td>..............</td>
+                  <td>....</td>
+                  <td>..........</td>
+                </tr>
+              ))}
           </tbody>
         </table>
 

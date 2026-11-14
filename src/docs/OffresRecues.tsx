@@ -23,10 +23,10 @@ export function OffresRecuesDoc({lotId}: {lotId: string}) {
 
   const cell = (i: number) => {
     const r = rows[i];
-    if (!r) return {num: '', nom: '', montant: ''};
+    if (!r) return {num: String(i + 1), nom: '..........................', montant: ''};
     return {
       num: String(i + 1),
-      nom: r.nom,
+      nom: r.nom || '..........................',
       montant: r.total !== null && r.total !== undefined ? fmt(r.total) : '—',
     };
   };

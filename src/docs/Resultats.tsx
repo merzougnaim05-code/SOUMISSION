@@ -6,13 +6,12 @@ export function ResultatsDoc() {
   const {state} = useStore();
   const s = state.settings;
 
-  const winners = state.lots
-    .map((lot) => {
-      const ranked = rankLot(lot, state.bidders, state.offers);
-      const w = ranked.find((r) => r.rank === 1);
-      return {lot, winner: w?.bidder, total: w?.totals};
-    })
-    .filter((x) => x.winner);
+  // كل الحصص تُعرض دائماً — الفائز أو حقل منقّط إن لم يُحدد بعد
+  const rows = state.lots.map((lot) => {
+    const ranked = rankLot(lot, state.bidders, state.offers);
+    const w = ranked.find((r) => r.rank === 1);
+    return {lot, winner: w?.bidder};
+  });
 
   return (
     <Page>
@@ -38,16 +37,16 @@ export function ResultatsDoc() {
           </tr>
         </thead>
         <tbody>
-          {winners.map(({lot, winner}, i) => (
+          {rows.map(({lot, winner}, i) => (
             <tr key={lot.id}>
               <td>{i + 1}</td>
               <td>{lot.nom}</td>
-              <td style={{fontWeight: 700}}>{winner?.nom}</td>
+              <td style={{fontWeight: 700}}>{winner?.nom || '..........................'}</td>
             </tr>
           ))}
-          {winners.length === 0 && (
+          {rows.length === 0 && (
             <tr>
-              <td colSpan={3}>لم يتم تحديد فائزين بعد — يرجى تسجيل العروض وإتمام التقييم.</td>
+              <td colSpan={3}>لم تُسجَّل حصص بعد — أضفها من تبويب «الحصص والمواد».</td>
             </tr>
           )}
         </tbody>

@@ -6,6 +6,7 @@ import {exportWord} from '../exportWord';
 import {exportExcel} from '../exportExcel';
 import {importConsultationFile} from '../importExcel';
 import {AnnonceDoc} from '../docs/Annonce';
+import {AnnonceProvisoireDoc} from '../docs/AnnonceProvisoire';
 import {
   AnnonceFinaleDoc,
   AzharDoc,
@@ -47,6 +48,7 @@ type DocKey =
   | 'comparaison'
   | 'eval-grid'
   | 'resultats'
+  | 'annonce-provisoire'
   | 'contrat'
   | 'invitation'
   | 'offres-recues'
@@ -78,6 +80,7 @@ const DOCS: {key: DocKey; label: string; desc: string; needsLot?: boolean; needs
   {key: 'comparaison', label: 'جدول مقارنة العروض', desc: 'مقارنة وتقييم العروض المالية لكل حصة مع الترتيب', needsLot: true},
   {key: 'eval-grid', label: 'كشف التقييم التفصيلي للحصة', desc: 'شبكة المواد × أسعار كل المتعهدين ومبالغها (كشف التقييم الأصلي)', needsLot: true},
   {key: 'resultats', label: 'إعلان نتائج الاستشارة', desc: 'جدول الفائزين بالمنح المؤقت للاتفاقية'},
+  {key: 'annonce-provisoire', label: 'إعلان عن المنح المؤقت (مفصل)', desc: 'الفائزون مع التعريف الجبائي ومبلغ العرض بعد المراجعة + أجل الطعون 10 أيام'},
   {key: 'contrat', label: 'عقد تموين', desc: 'العقد الكامل مع مبلغ الاتفاقية تفقيطاً', needsLot: true, needsBidder: true},
   {key: 'nyzaha', label: 'التصريح بالنزاهة', desc: 'صيغة القانون 23-12 / من وثائق ملف الترشح', needsBidder: true},
   {key: 'iqrar', label: 'إقرار التعهد بالأسعار', desc: 'إقرار المطابقة + جدول أسعار الاتفاقية لكل حصة', needsLot: true, needsBidder: true},
@@ -349,6 +352,8 @@ export function DocumentsPage() {
         return <EvalGridDoc lotId={lotId} />;
       case 'resultats':
         return <ResultatsDoc />;
+      case 'annonce-provisoire':
+        return <AnnonceProvisoireDoc />;
       case 'contrat':
         return <ContratDoc bidderId={bidderId || winnerOfLot(lotId)} lotId={lotId} />;
       case 'nyzaha':
@@ -497,6 +502,7 @@ function fileName(
     comparaison: `مقارنة العروض - ${lot?.nom ?? ''}`,
     'eval-grid': `كشف التقييم التفصيلي - ${lot?.nom ?? ''}`,
     resultats: 'إعلان نتائج الاستشارة',
+    'annonce-provisoire': 'إعلان عن المنح المؤقت',
     contrat: `عقد تموين - ${lot?.nom ?? ''} - ${bidder?.nom ?? ''}`,
     nyzaha: 'التصريح بالنزاهة',
     iqrar: `إقرار الأسعار - ${lot?.nom ?? ''} - ${bidder?.nom ?? ''}`,

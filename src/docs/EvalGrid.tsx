@@ -11,23 +11,30 @@ export function EvalGridDoc({lotId}: {lotId: string}) {
   const [pageLotId, setPageLotId] = useState(lotId);
   const lot = state.lots.find((l) => l.id === pageLotId) ?? state.lots[0];
 
-  // المتعهدين الذين قدموا سعراً واحداً على الأقل على هذه الحصة
-  const cols = state.bidders.filter((b) =>
+  // المتعهدين الذين قدموا سعراً واحداً على الأقل على هذه الحصة —
+  // وإن لم يقدر أحد فتُعرض خمسة أعمدة فارغة «ممون 1..5» كما في الكشف الأصلي
+  const realCols = state.bidders.filter((b) =>
     state.offers.some((o) => o.bidderId === b.id && o.lotId === lot.id && Object.keys(o.prix).length > 0),
   );
+  const cols = realCols.map((b) => ({id: b.id, nom: b.nom, ph: false}));
+  if (cols.length === 0) {
+    for (let i = 1; i <= 5; i++) cols.push({id: `ph-${i}`, nom: `ممون ${i}`, ph: true});
+  }
   const ranked = rankLot(lot, state.bidders, state.offers);
   const rankOf = (bidderId: string) => ranked.find((r) => r.bidder.id === bidderId)?.rank;
 
-  const priceOf = (bidderId: string, matId: string): number | null => {
-    const o = state.offers.find((x) => x.bidderId === bidderId && x.lotId === lot.id);
+  const priceOf = (colId: string, matId: string): number | null => {
+    if (colId.startsWith('ph-')) return null;
+    const o = state.offers.find((x) => x.bidderId === colId && x.lotId === lot.id);
     const p = o?.prix[matId];
     return p && p > 0 ? p : null;
   };
   /** مجموع المبالغ: null إن كان العرض ناقصاً (مادة بلا سعر) */
-  const totalOf = (bidderId: string): number | null => {
+  const totalOf = (colId: string): number | null => {
+    if (colId.startsWith('ph-')) return null;
     let sum = 0;
     for (const mm of lot.materiaux) {
-      const p = priceOf(bidderId, mm.id);
+      const p = priceOf(colId, mm.id);
       if (p === null) return null;
       sum += p * mm.qteMax;
     }
@@ -121,9 +128,9 @@ export function EvalGridDoc({lotId}: {lotId: string}) {
               const t = totalOf(b.id);
               return (
                 <Fragment key={b.id}>
-                  <td style={{fontSize: '9.5pt'}}>{t === null ? '—' : ''}</td>
+                  <td style={{fontSize: '9.5pt'}} />
                   <td style={{fontSize: '9.5pt'}}>
-                    {t === null ? 'غير مكتمل' : `${fmt(t)} (${rankOf(b.id) ?? '—'})`}
+                    {b.ph ? '' : t === null ? 'غير مكتمل' : `${fmt(t)} (${rankOf(b.id) ?? '—'})`}
                   </td>
                 </Fragment>
               );
@@ -131,12 +138,6 @@ export function EvalGridDoc({lotId}: {lotId: string}) {
           </tr>
         </tbody>
       </table>
-
-      {cols.length === 0 && (
-        <p className="mt-3" style={{textAlign: 'center', fontSize: '12pt'}}>
-          لا توجد عروض مسجلة على هذه الحصة — أدخل الأسعار من تبويب «العروض».
-        </p>
-      )}
 
       <div className="mt-4" style={{fontSize: '11pt'}}>
         <b>أعضاء المجلس:</b> {committeeNames.length > 0 ? committeeNames.join('، ') : '..........................'}
