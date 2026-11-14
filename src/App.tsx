@@ -203,6 +203,7 @@ function Router() {
 }
 
 import {PrintProvider} from './printSettings';
+import {InstInfoWidget} from './components/InstInfoWidget';
 
 export default function App() {
   return (
@@ -210,6 +211,32 @@ export default function App() {
       <HeatProvider>
         <PrintProvider>
           <Router />
+          <InstInfoWidget
+            appName="برنامج الاستشارة"
+            targets={[
+              {
+                storageKey: 'estichara-state-v2',
+                subPath: 'settings',
+                fields: {
+                  institution: 'institution',
+                  wilaya: 'wilaya',
+                  commune: 'commune',
+                  account: 'rib',
+                },
+                numeric: ['annee'],
+              },
+              {
+                storageKey: 'estichara-heat-v2',
+                subPath: 'settings',
+                fields: {
+                  institution: 'institution',
+                  wilaya: 'wilaya',
+                  commune: 'commune',
+                },
+                numeric: ['annee'],
+              },
+            ]}
+          />
         </PrintProvider>
       </HeatProvider>
     </StoreProvider>
