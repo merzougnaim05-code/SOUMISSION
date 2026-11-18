@@ -1,5 +1,5 @@
 import {rankLot, useStore} from '../store';
-import {DocHeader, FreeAt, Page} from './primitives';
+import {DirectorSign, DocHeader, FreeAt, Page} from './primitives';
 
 /** إعلان نتائج الاستشارة — المنح المؤقت للاتفاقية */
 export function ResultatsDoc() {
@@ -63,9 +63,7 @@ export function ResultatsDoc() {
       </ul>
 
       <FreeAt />
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
-        مدير المؤسسة
-      </div>
+      <DirectorSign />
     </Page>
   );
 }

@@ -117,6 +117,8 @@ export function defaultState(): AppState {
       rib: '',
       dateSessionConseil: '',
       azharNum: 1,
+      signDirector: '',
+      stampImg: '',
     },
     lots: [lot1, lot2, lot3, lot4],
     bidders: [],

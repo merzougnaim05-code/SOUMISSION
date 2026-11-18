@@ -188,7 +188,93 @@ export function DashboardPage() {
           )}
         </div>
       </Section>
+      <SignaturesSection />
       <BackupCard />
     </div>
+  );
+}
+
+/** رفع صورتي توقيع المدير والختم الرسمي — تُدرجان آلياً في خانات «مدير المؤسسة» */
+function SignaturesSection() {
+  const {state, setSettings} = useStore();
+  const sig = state.settings.signDirector;
+  const stamp = state.settings.stampImg;
+
+  const readImage = (file: File, apply: (data: string) => void) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      // تصغير الصورة حفاظاً على مساحة التخزين
+      const maxW = 420;
+      const maxH = 280;
+      const scale = Math.min(1, maxW / img.width, maxH / img.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      apply(canvas.toDataURL('image/png'));
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  };
+
+  const picker = (apply: (data: string) => void) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const f = input.files?.[0];
+      if (f) readImage(f, apply);
+    };
+    input.click();
+  };
+
+  return (
+    <Section title="التوقيع والختم — يُدرجان آلياً في الوثائق">
+      <Grid cols={2}>
+        <Field label="توقيع مدير المؤسسة">
+          <div className="flex items-center gap-3">
+            {sig ? (
+              <>
+                <img src={sig} alt="التوقيع" className="h-14 border border-slate-200 rounded bg-white" />
+                <button className="text-xs text-rose-600 underline" onClick={() => setSettings({signDirector: ''})}>
+                  حذف
+                </button>
+              </>
+            ) : (
+              <button
+                className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-sm font-semibold hover:bg-slate-50"
+                onClick={() => picker((d) => setSettings({signDirector: d}))}
+              >
+                🖼 رفع صورة التوقيع
+              </button>
+            )}
+          </div>
+        </Field>
+        <Field label="الختم الرسمي">
+          <div className="flex items-center gap-3">
+            {stamp ? (
+              <>
+                <img src={stamp} alt="الختم" className="h-14 border border-slate-200 rounded bg-white" />
+                <button className="text-xs text-rose-600 underline" onClick={() => setSettings({stampImg: ''})}>
+                  حذف
+                </button>
+              </>
+            ) : (
+              <button
+                className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-sm font-semibold hover:bg-slate-50"
+                onClick={() => picker((d) => setSettings({stampImg: d}))}
+              >
+                🖼 رفع صورة الختم
+              </button>
+            )}
+          </div>
+        </Field>
+      </Grid>
+      <p className="text-xs text-slate-400">
+        ارفع كل صورة مرة واحدة (يُفضَّل بخلفية شفافة PNG) — تظهر تلقائياً في نهاية الإعلانات والمحاضر ووثائق المنح
+        تحت خانة «مدير المؤسسة».
+      </p>
+    </Section>
   );
 }

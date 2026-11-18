@@ -40,6 +40,29 @@ export function SignRow({right, left}: {right: string; left?: string}) {
   );
 }
 
+/** خانة «مدير المؤسسة» الختامية — تُدرج صورة التوقيع والختم من الإعدادات إن وُجدتا
+ *  (تُرفع مرة واحدة من تبويب «المدخل»)، وإلا تظهر خانة فارغة للتوقيع اليدوي */
+export function DirectorSign() {
+  const {state} = useStore();
+  const sig = state.settings.signDirector;
+  const stamp = state.settings.stampImg;
+  return (
+    <div className="text-center mt-8" style={{fontWeight: 700}}>
+      مدير المؤسسة
+      <div style={{height: '17mm', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4mm'}}>
+        {sig ? <img src={sig} alt="التوقيع" style={{maxHeight: '15mm', maxWidth: '42mm', objectFit: 'contain'}} /> : null}
+        {stamp ? (
+          <img
+            src={stamp}
+            alt="الختم"
+            style={{maxHeight: '20mm', maxWidth: '28mm', objectFit: 'contain', mixBlendMode: 'multiply'}}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 /** ترويسة أسفل الوثيقة: حرر بـ ... في ... */
 export function FreeAt() {
   const {state} = useStore();

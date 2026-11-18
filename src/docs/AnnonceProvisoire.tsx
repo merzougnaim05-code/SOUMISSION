@@ -1,5 +1,5 @@
 import {fmt, rankLot, useStore} from '../store';
-import {DocHeader, FreeAt, Page} from './primitives';
+import {DirectorSign, DocHeader, FreeAt, Page} from './primitives';
 
 /** إعلان عن المنح المؤقت للاتفاقية — منقول بأمانة من ورقة «الاعلان عن المنح المؤقت»
  *  في الملف الأصلي: جدول الفائزين بالمنح المؤقت مع رقم التعريف الجبائي ومبلغ العرض
@@ -80,9 +80,7 @@ export function AnnonceProvisoireDoc() {
       </ul>
 
       <FreeAt />
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
-        مدير المؤسسة
-      </div>
+      <DirectorSign />
     </Page>
   );
 }

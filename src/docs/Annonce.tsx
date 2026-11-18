@@ -1,5 +1,5 @@
 import {useStore} from '../store';
-import {DocHeader, FreeAt, Page} from './primitives';
+import {DirectorSign, DocHeader, FreeAt, Page} from './primitives';
 
 export function AnnonceDoc() {
   const {state} = useStore();
@@ -91,9 +91,7 @@ export function AnnonceDoc() {
       </p>
 
       <FreeAt />
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
-        مدير المؤسسة
-      </div>
+      <DirectorSign />
     </Page>
   );
 }

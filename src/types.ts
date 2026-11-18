@@ -60,6 +60,10 @@ export interface Settings {
   dateSessionConseil: string;
   /** رقم الإعذار الموجه للممون (متسلسل يدوياً) */
   azharNum: number;
+  /** صورة توقيع مدير المؤسسة (dataURL) — تُدرج في خانات «مدير المؤسسة» */
+  signDirector?: string;
+  /** صورة الختم الرسمي (dataURL) */
+  stampImg?: string;
 }
 
 export interface Committee {

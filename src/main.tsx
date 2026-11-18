@@ -8,3 +8,12 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+/* PWA: تسجيل عامل الخدمة (يعمل أوفلاين بعد أول زيارة — الشبكة أولاً للمحداثة) */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      /* بدون PWA لا يتعطل التطبيق — يعمل عادي */
+    });
+  });
+}

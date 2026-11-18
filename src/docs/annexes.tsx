@@ -1,7 +1,7 @@
 import type {CSSProperties, ReactNode} from 'react';
 import {useStore} from '../store';
 import {tafqitDZD} from '../tafqit';
-import {DocHeader, FreeAt, Page} from './primitives';
+import {DocHeader, DirectorSign, FreeAt, Page} from './primitives';
 import {fmt, offerTotals, rankLot, fmtDate} from '../store';
 import type {Lot} from '../types';
 
@@ -613,9 +613,7 @@ export function AnnonceFinaleDoc() {
         * المتعهدين الذين رست عليهم الاستشارة ملزمون بالحضور إلى المؤسسة من أجل إتمام الإجراءات والتوقيع على الاتفاقية.
       </p>
       <FreeAt />
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
-        مدير المؤسسة
-      </div>
+      <DirectorSign />
     </Page>
   );
 }

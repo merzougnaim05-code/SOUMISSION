@@ -1,5 +1,5 @@
 import {useStore} from '../store';
-import {FreeAt, Page} from './primitives';
+import {DirectorSign, FreeAt, Page} from './primitives';
 
 /** محضر اجتماع لجنة فتح الأظرفة وتقييم العروض — جلسة فتح الأظرفة */
 export function ProcesVerbalDoc() {
@@ -107,9 +107,7 @@ export function ProcesVerbalDoc() {
       </p>
 
       <FreeAt />
-      <div className="text-center mt-8" style={{fontWeight: 700}}>
-        مدير المؤسسة
-      </div>
+      <DirectorSign />
     </Page>
   );
 }
