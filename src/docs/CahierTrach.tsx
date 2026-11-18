@@ -62,7 +62,7 @@ export function CahierTrachDoc() {
         <div className="text-center mt-12" style={{fontWeight: 700, fontSize: '16pt'}}>
           الاستشارة
         </div>
-        <p className="mt-4" style={{textAlign: 'justify', fontSize: '12pt'}}>
+        <p className="mt-4" style={{textAlign: 'right', fontSize: '12pt'}}>
           طبقاً لأحكام القانون رقم 23-12 المؤرخ في 18 محرم عام 1445 الموافق 5 غشت سنة 2023 يحدد القواعد
           العامة المتعلقة بالصفقات العمومية والمرسوم الرئاسي رقم 15/247 المؤرخ في 16 سبتمبر 2015 المتضمن
           تنظيم الصفقات العمومية وتفويضات المرفق العام.
@@ -75,13 +75,13 @@ export function CahierTrachDoc() {
       {/* لائحة محتويات ملف الترشح */}
       <Page>
         <div className="doc-title">لائحة محتويات ملف الترشح</div>
-        <p style={{fontSize: '12.5pt', textAlign: 'justify'}}>
+        <p style={{fontSize: '12.5pt', textAlign: 'right'}}>
           يقدم كل عارض ملف ترشح يضم الوثائق المذكورة أدناه، ويودع في الظرفة المخصصة للترشح في آجال قبول
           العروض، وأي ملف غير كامل يجري استبعاده.
         </p>
         <ol className="mt-4 space-y-3" style={{fontSize: '12.5pt', paddingRight: '22pt'}}>
           {TRACH_DOCS.map((t, i) => (
-            <li key={i} style={{textAlign: 'justify'}}>
+            <li key={i} style={{textAlign: 'right'}}>
               {t}
             </li>
           ))}
@@ -111,11 +111,11 @@ export function CahierTrachDoc() {
       {/* خانة التصريح بالنزاهة — يُستكمل من وثيقة «التصريح بالنزاهة» بحسب العارض */}
       <Page>
         <div className="doc-title">التصريح بالنزاهة</div>
-        <p style={{fontSize: '12.5pt', textAlign: 'justify'}} className="mt-2">
+        <p style={{fontSize: '12.5pt', textAlign: 'right'}} className="mt-2">
           يتقدم كلا عارض الاتفاقية المؤقتة أو النهائية، بصفته شخصاً ذا صفة قانونية، بتصريح بالنزاهة وفق
           النموذج المقدر من الإدارة، سواء تقدم منفرداً أو على شكل مجموعة أو اتحاد اقتصادي.
         </p>
-        <p style={{fontSize: '12.5pt', textAlign: 'justify'}} className="mt-3">
+        <p style={{fontSize: '12.5pt', textAlign: 'right'}} className="mt-3">
           يثبت هذا التصريح، تحت طائلة الاستبعاد من الإكتراء، عدم استفادة العارض من أي منع للتعاقد مع
           الإدارة وفقاً للمواد 63 و64 من القانون 23-12 المشار إليه أعلاه.
         </p>

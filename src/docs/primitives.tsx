@@ -84,11 +84,12 @@ export function hasDotRuns(text: string): boolean {
   return /\.{3,}/.test(text ?? '');
 }
 
-/** محاذاة فقرة دفتر الشروط: النقاط/المراجع اللاتينية = يمين، العربية الصرفة = مضبوط.
- *  الخلط العربي/اللاتيني مع justify ينتج فجوات هائلة (قيست حتى 658px) */
+/** محاذاة فقرة دفتر الشروط: النقاط/المراجع اللاتينية أو الرقمية = يمين، العربية الصرفة = مضبوط.
+ *  الخلط العربي مع المراجع (23-12، 16/09/2015، NFA 33-102) مع justify ينتج فجوات هائلة
+ *  (قيست حتى 658px) — كل فقرة تحمل نقاطاً أو أرقاماً مرجعية تُحاذى يميناً */
 export function docParagraphAlign(text: string): 'justify' | 'right' {
   if (!text) return 'justify';
-  return /\.{3,}|[A-Za-z]{3,}/.test(text) ? 'right' : 'justify';
+  return /\.{3,}|[A-Za-z]{2,}|\d+\s*[\/\-–]\s*\d+|\d{3,}/.test(text) ? 'right' : 'justify';
 }
 export function withDots(text: string): ReactNode {
   // نعزل داخل اتجاه LTR: (1) سلاسل النقاط (2) المراجع اللاتينية مع أقواسها

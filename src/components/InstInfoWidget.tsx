@@ -125,7 +125,8 @@ export function InstInfoWidget({ appName, targets }: { appName: string; targets:
     };
     boot();
     return () => { alive = false; };
-  }, [appKey, targets]);
+    // الإقلاع مرة واحدة عند التركيب — كان الاعتماد على appKey غير المعرّفة فيسبب ReferenceError يُسقط الواجهة كلها
+  }, []);
 
   const doFetch = async (mecanoArg?: string) => {
     const mecano = mecanoArg || mecanoInput.trim() || getMecano();

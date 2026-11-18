@@ -43,7 +43,7 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
         <div className="text-center mt-12" style={{fontWeight: 700, fontSize: '16pt'}}>
           الاستشارة
         </div>
-        <p className="mt-4" style={{textAlign: 'justify', fontSize: '12pt'}}>
+        <p className="mt-4" style={{textAlign: 'right', fontSize: '12pt'}}>
           طبقاً لأحكام القانون رقم 23-12 المؤرخ في 18 محرم عام 1445 الموافق 5 غشت سنة 2023 يحدد القواعد
           العامة المتعلقة بالصفقات العمومية والمرسوم الرئاسي رقم 15/247 المؤرخ في 16 سبتمبر 2015 المتضمن
           تنظيم الصفقات العمومية وتفويضات المرفق العام.
@@ -67,7 +67,7 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
           <div style={{fontWeight: 700}}>{s.institution}</div>
         </div>
         <div className="doc-title">رســــــــــالة التعهد</div>
-        <div style={{fontSize: '11.5pt', textAlign: 'justify'}} className="space-y-1">
+        <div style={{fontSize: '11.5pt', textAlign: 'right'}} className="space-y-1">
           <p>طبقاً لأحكام المرسوم الرئاسي رقم 23-12، مؤرخ في: 18 محرم عام 1445 الموافق 5 غشت سنة 2023.</p>
           <p>
             طبقاً لأحكام المرسوم الرئاسي رقم 15-247، مؤرخ في: 06 ذو الحجة عام 1436 الموافق 16 سبتمبر سنة
@@ -110,13 +110,13 @@ export function CahierFinancierDoc({bidderId}: {bidderId: string}) {
               {bidder?.rc || ''}
             </span>
           </div>
-          <p style={{textAlign: 'justify'}}>
+          <p style={{textAlign: 'right'}}>
             بعد الاطلاع على وثائق مشروع الصفقة، وبعد تقدير نوع الخدمات الواجب القيام بها ومدى صعوبتها من وجهة
             نظري وتحت مسؤوليتي: أسلم جدولاً بالأسعار وبياناً تقديرياً مفصلاً طبقاً للإطارين الواردين في ملف
             مشروع الصفقة، موقعين باسمي، ألتزم وأتعهد تجاه <b>{s.institution}</b> بتنفيذ الخدمات طبقاً لشروط
             دفتر التعليمات الخاصة طيلة السنة المالية <b>{s.annee}</b>.
           </p>
-          <p style={{textAlign: 'justify'}}>
+          <p style={{textAlign: 'right'}}>
             أؤكد، تحت طائلة فسخ الصفقة بقوة القانون أو وضعها تحت التسيير المباشر للإدارة على حساب الشركة، بأن
             الشركة المذكورة لا تنطبق عليها الممنوعات المنصوص عليها في التشريع والتنظيم المعمول بهما. أشهد بأن
             المعلومات المذكورة أعلاه صحيحة تحت طائلة التعرض لتطبيق العقوبات المنصوص عليها في المادة 216 من
