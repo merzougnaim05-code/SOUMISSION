@@ -129,6 +129,31 @@ function applyInfo(targets: InstInfoTarget[], info: StoredInfo): string[] {
   return applied;
 }
 
+// هل قيم التطبيق المطبّقة تطابق فعلاً المعطيات الواصلة؟ الختم الزمني وحده
+// لا يكفي: قد تتغيّر المعطيات دون أن يتقدّم الختم (حمولة اختبار مثلاً)،
+// أو تُمسح قيم التطبيق بعد تطبيقها — عندها يجب إعادة التطبيق لا تخطّيه.
+function targetsMatchStored(targets: InstInfoTarget[], info: StoredInfo): boolean {
+  for (const t of targets) {
+    const raw = getLS(t.storageKey);
+    if (!raw) return false;
+    let obj: Record<string, unknown>;
+    try {
+      obj = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      return false;
+    }
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+    const container = getContainer(obj, t.subPath);
+    if (!container) return false;
+    for (const [hubField, appField] of Object.entries(t.fields)) {
+      const v = info[hubField];
+      if (v === undefined || v === null || String(v).trim() === '') continue;
+      if (String(container[appField] ?? '') !== String(v)) return false;
+    }
+  }
+  return true;
+}
+
 export function InstInfoWidget({ appName, targets }: { appName: string; targets: InstInfoTarget[] }) {
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState<StoredInfo | null>(null);
@@ -169,12 +194,14 @@ export function InstInfoWidget({ appName, targets }: { appName: string; targets:
           window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
       } catch { /* تجاهل */ }
-      // تطبيق المعطيات المحفوظة محلياً إن كانت أحدث مما طُبّق سابقاً
+      // تطبيق المعطيات المحفوظة محلياً إن لم تُطبَّق بعد؛ يُتخطّى فقط إن كان
+      // الختم غير أحدث وكانت القيم مطابقة فعلاً (الختم وحده لا يكفي).
       const stored = loadStoredInfo();
       if (!stored) return;
       const storedAt = stored.updatedAt;
       const mine = getLS(LS_APPLIED) || '';
-      if (!storedAt || (mine && new Date(storedAt) <= new Date(mine))) return;
+      const upToDate = storedAt !== '' && mine !== '' && new Date(storedAt) <= new Date(mine);
+      if (upToDate && targetsMatchStored(targets, stored.info)) return;
       const applied = applyInfo(targets, stored.info);
       setLS(LS_APPLIED, storedAt);
       if (applied.length > 0) { location.reload(); return; }
